@@ -24,34 +24,41 @@ function Shell() {
   return (
     <div className="app">
       <header className="header no-print">
-        <div className="brand">
-          <span className="brand-name">Themis Review</span>
-          <span className="brand-tag">{t('app.tagline')}</span>
-        </div>
-        {analysis && (
-          <nav className="tabs">
-            <button className={view === 'map' ? 'tab active' : 'tab'} onClick={() => setView('map')}>
-              {t('tab.map')}
-            </button>
-            <button className={view === 'report' ? 'tab active' : 'tab'} onClick={() => setView('report')}>
-              {t('tab.report')}
-            </button>
-          </nav>
-        )}
-        <div className="header-right">
+        <div className="header-zone header-left">
           {analysis && (
-            <span className={'score-badge grade-' + analysis.projectScore.grade}>
-              {analysis.projectScore.score} · {analysis.projectScore.grade}
+            <nav className="tabs">
+              <button className={view === 'map' ? 'tab active' : 'tab'} onClick={() => setView('map')}>
+                {t('tab.map')}
+              </button>
+              <button className={view === 'report' ? 'tab active' : 'tab'} onClick={() => setView('report')}>
+                {t('tab.report')}
+              </button>
+            </nav>
+          )}
+        </div>
+
+        <div className="brand">
+          <span className="brand-name">Themis</span>
+          <span className="brand-name">Review</span>
+        </div>
+
+        <div className="header-zone header-right">
+          {analysis && (
+            <span className="score-badge">
+              <span className="score-badge-label">{t('score.project')}</span>
+              <span className={'score-badge-value grade-' + analysis.projectScore.grade}>
+                {analysis.projectScore.score} · {analysis.projectScore.grade}
+              </span>
             </span>
           )}
           {analysis && (
-            <button className="btn" onClick={exportPdf}>
+            <button className="btn primary" onClick={exportPdf}>
               {t('header.export')}
             </button>
           )}
           {analysis && (
             <button
-              className="btn ghost"
+              className="btn"
               onClick={() => {
                 setAnalysis(null)
                 setSelected(null)
@@ -61,7 +68,7 @@ function Shell() {
               {t('header.reset')}
             </button>
           )}
-          <button className="btn ghost lang" onClick={() => setLang(lang === 'es' ? 'en' : 'es')}>
+          <button className="btn lang" onClick={() => setLang(lang === 'es' ? 'en' : 'es')}>
             {lang === 'es' ? 'EN' : 'ES'}
           </button>
         </div>

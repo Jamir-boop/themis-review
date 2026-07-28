@@ -6,7 +6,12 @@ type Dict = Record<string, string>
 
 const es: Dict = {
   'app.tagline': 'Revisión de código para Automation Anywhere',
-  'drop.title': 'Arrastra aquí los .zip exportados del Control Room',
+  'drop.kicker': 'Control Room · A360 · Procesado local',
+  'drop.h1a': 'Revisa',
+  'drop.h1b': 'tus bots',
+  'drop.h1c': 'sin subirlos',
+  'drop.tab': 'zip',
+  'drop.title': 'arrastra los .zip exportados del Control Room',
   'drop.hint': 'Todo se procesa en tu navegador. Nada se sube a ningún servidor.',
   'drop.button': 'Elegir archivos',
   'drop.error': 'No se encontraron taskbots en el zip',
@@ -92,7 +97,12 @@ const es: Dict = {
 
 const en: Dict = {
   'app.tagline': 'Code review for Automation Anywhere',
-  'drop.title': 'Drop Control Room export .zip files here',
+  'drop.kicker': 'Control Room · A360 · Processed locally',
+  'drop.h1a': 'Review',
+  'drop.h1b': 'your bots',
+  'drop.h1c': 'no uploads',
+  'drop.tab': 'zip',
+  'drop.title': 'drop your Control Room export .zip files',
   'drop.hint': 'Everything is processed in your browser. Nothing is uploaded anywhere.',
   'drop.button': 'Choose files',
   'drop.error': 'No taskbots found in the zip',
