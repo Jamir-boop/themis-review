@@ -2,7 +2,7 @@ import { useContext, useRef, useState } from 'react'
 import { analyzeZips } from '../core/analyze'
 import type { ProjectAnalysis } from '../core/model'
 import { HERO_PHRASES, LangContext, useT } from './i18n'
-import heroArt from './assets/themis-dither-wide.png'
+import heroArt from './assets/themis-dither-square.png'
 
 export default function DropZone({ onAnalyzed }: { onAnalyzed: (a: ProjectAnalysis) => void }) {
   const t = useT()
