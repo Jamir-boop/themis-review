@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Two interlocking comma lobes, 180° rotationally symmetric. The inner edge is the
+       exact S-divider (two arcs) so the lobes interlock cleanly; the outer edge is
+       pinched to a point at the tail. Black outline doubles as the gap between the
+       lobes and keeps the mark readable on light browser tab bars. -->
+  <g transform="translate(32 32) rotate(-30)"
+     fill="#ffffff" stroke="#000000" stroke-width="3.5"
+     stroke-linejoin="round" stroke-linecap="round">
+    <path id="lobe"
+          d="M 0 -26
+             C 9 -25, 21 -17, 24 -3
+             C 27 11, 16 26, 0 26
+             A 13 13 0 0 1 0 0
+             A 13 13 0 0 0 0 -26 Z" />
+    <use href="#lobe" transform="rotate(180)" />
+  </g>
+</svg>
