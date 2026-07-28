@@ -86,8 +86,20 @@ function Shell() {
   )
 }
 
+const LANG_KEY = 'themis-lang'
+
+function initialLang(): Lang {
+  const saved = localStorage.getItem(LANG_KEY)
+  if (saved === 'es' || saved === 'en') return saved
+  return navigator.language.toLowerCase().startsWith('es') ? 'es' : 'en'
+}
+
 export default function App() {
-  const [lang, setLang] = useState<Lang>('es')
+  const [lang, setLangState] = useState<Lang>(initialLang)
+  const setLang = (l: Lang) => {
+    localStorage.setItem(LANG_KEY, l)
+    setLangState(l)
+  }
   return (
     <LangContext.Provider value={{ lang, setLang }}>
       <Shell />

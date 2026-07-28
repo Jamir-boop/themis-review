@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { analyzeZips } from '../src/core/analyze'
+import { parseTaskbot } from '../src/core/parse'
+import { buildGraph, callDepth } from '../src/core/graph'
+import { messageBoxRules } from '../src/core/rules/messagebox'
 
 const DATA = join(__dirname, '..', '.data')
 
@@ -40,9 +43,10 @@ describe('framework zip', () => {
     expect(m.totalLines).toBeGreaterThan(50)
   })
 
-  it('flags reachable messageBoxes as MSGBOX_UNATTENDED', () => {
-    const mb = a.findings.filter((f) => f.ruleId === 'MSGBOX_UNATTENDED' || f.ruleId === 'MSGBOX_DEAD')
-    expect(mb.length).toBeGreaterThan(0)
+  it('does not flag message boxes that close themselves', () => {
+    // every box in the sample bots sets closeMsgBox + a timeOut
+    expect(a.findings.filter((f) => f.ruleId === 'MSGBOX_BLOCKING')).toEqual([])
+    expect(Object.values(a.metrics).some((m) => m.messageBoxes > 0)).toBe(true)
   })
 
   it('runTask input wires captured', () => {
@@ -83,5 +87,91 @@ describe('all zips combined', () => {
     for (const t of a.taskbots) {
       t.actions.forEach((act, i) => expect(act.line).toBe(i + 1))
     }
+  })
+
+  it('rates a missing description on an input/output above a local one', () => {
+    const contract = a.findings.filter((f) => f.ruleId === 'VAR_NO_DESCRIPTION')
+    const local = a.findings.filter((f) => f.ruleId === 'VAR_NO_DESCRIPTION_LOCAL')
+    expect(contract.length).toBeGreaterThan(0)
+    expect(local.length).toBeGreaterThan(0)
+    expect(contract.every((f) => f.severity === 'warn')).toBe(true)
+    expect(local.every((f) => f.severity === 'info')).toBe(true)
+    for (const f of contract) {
+      const bot = a.taskbots.find((t) => t.path === f.botPath)!
+      const v = bot.variables.find((x) => x.name === f.varName)!
+      expect(v.input || v.output).toBe(true)
+    }
+  })
+
+  it('never flags utilidad_mensajeria for call depth', () => {
+    const depthFindings = a.findings.filter((f) => f.ruleId === 'CALL_DEPTH')
+    expect(depthFindings.every((f) => !f.params.callee.startsWith('utilidad_mensajeria'))).toBe(true)
+  })
+})
+
+describe('synthetic taskbots', () => {
+  const wrap = (nodes: unknown[], variables: unknown[] = []) =>
+    JSON.stringify({ nodes, variables, packages: [] })
+
+  const msgBox = (uid: string, closes: boolean) => ({
+    uid,
+    commandName: 'messageBox',
+    packageName: 'MessageBox',
+    attributes: [
+      { name: 'content', value: { type: 'STRING', string: 'test' } },
+      { name: 'closeMsgBox', value: { type: 'BOOLEAN', boolean: closes } },
+    ],
+  })
+  const msgBoxPlus = (uid: string, closes: boolean) => ({
+    uid,
+    commandName: 'ShowDictionary',
+    packageName: 'MessageBoxPlus',
+    attributes: [{ name: 'isChecked', value: { type: 'BOOLEAN', boolean: closes } }],
+  })
+  const log = (uid: string) => ({ uid, commandName: 'log_message', packageName: 'A360BotFramework', attributes: [] })
+
+  it('flags only the boxes that never close', () => {
+    const bot = parseTaskbot('Bots/x/tasks/T', 'z', wrap([msgBox('a', false), msgBoxPlus('b', false), msgBox('c', true), msgBoxPlus('d', true)]))
+    const blocking = messageBoxRules(bot).filter((f) => f.ruleId === 'MSGBOX_BLOCKING')
+    expect(blocking.map((f) => f.line)).toEqual([1, 2])
+    expect(blocking.every((f) => f.severity === 'error')).toBe(true)
+  })
+
+  it('flags a taskbot with more active boxes than logs', () => {
+    const noisy = parseTaskbot('Bots/x/tasks/Noisy', 'z', wrap([msgBox('a', true), msgBox('b', true), log('c')]))
+    expect(messageBoxRules(noisy).some((f) => f.ruleId === 'MSGBOX_OVER_LOGS')).toBe(true)
+
+    const quiet = parseTaskbot('Bots/x/tasks/Quiet', 'z', wrap([msgBox('a', true), log('b'), log('c')]))
+    expect(messageBoxRules(quiet).some((f) => f.ruleId === 'MSGBOX_OVER_LOGS')).toBe(false)
+  })
+
+  it('measures call depth and exempts the messaging utility', () => {
+    const call = (uid: string, target: string) => ({
+      uid,
+      commandName: 'runTask',
+      packageName: 'TaskBot',
+      attributes: [
+        {
+          name: 'taskbot',
+          value: { type: 'TASKBOT', taskbotFile: { type: 'FILE', string: 'repository:///' + target } },
+        },
+      ],
+    })
+    const p = (n: string) => 'Bots/x/tasks/' + n
+    const bots = [
+      parseTaskbot(p('000_Master'), 'z', wrap([call('m1', p('001_Step')), call('m2', p('utilidad_mensajeria'))])),
+      parseTaskbot(p('001_Step'), 'z', wrap([call('s1', p('002_Deep')), call('s2', p('utilidad_mensajeria'))])),
+      parseTaskbot(p('002_Deep'), 'z', wrap([])),
+      parseTaskbot(p('utilidad_mensajeria'), 'z', wrap([])),
+    ]
+    const g = buildGraph(bots)
+    const depth = callDepth(g.edges)
+    expect(depth.get(p('000_Master'))).toBe(1)
+    expect(depth.get(p('001_Step'))).toBe(2)
+    expect(depth.get(p('002_Deep'))).toBe(3)
+
+    const deep = g.findings.filter((f) => f.ruleId === 'CALL_DEPTH')
+    expect(deep).toHaveLength(1)
+    expect(deep[0]).toMatchObject({ botPath: p('001_Step'), severity: 'error', params: { callee: '002_Deep', depth: '3' } })
   })
 })

@@ -5,10 +5,17 @@ export const DEDUCTION: Record<Severity, number> = { error: 4, warn: 1.5, info: 
 /** Max points one rule class can deduct from a single bot — one noisy rule shouldn't nuke the score. */
 export const RULE_CAP = 15
 
+/** Variants of one rule (…_LOCAL) share a cap, so splitting a rule in two
+ *  changes how findings are weighted without doubling what the category can cost. */
+function capGroup(ruleId: string): string {
+  return ruleId.replace(/_LOCAL$/, '')
+}
+
 export function scoreFindings(findings: Finding[]): number {
   const byRule = new Map<string, number>()
   for (const f of findings) {
-    byRule.set(f.ruleId, (byRule.get(f.ruleId) ?? 0) + DEDUCTION[f.severity])
+    const key = capGroup(f.ruleId)
+    byRule.set(key, (byRule.get(key) ?? 0) + DEDUCTION[f.severity])
   }
   let total = 0
   for (const d of byRule.values()) total += Math.min(d, RULE_CAP)

@@ -430,7 +430,8 @@ button, input, select, textarea { font: inherit; }
 .tabs.small { gap: 20px; padding: 12px 20px 0; border-bottom: 1px solid var(--border); }
 .tabs.small .tab { font-family: var(--font-mono); font-size: 0.74rem; font-weight: 400; letter-spacing: 0.1em; padding-bottom: 12px; }
 
-.code-list, .var-table, .finding-list { flex: 1; overflow: auto; margin: 0; }
+/* A <table> is not a scroll container, so it needs a wrapper or the page scrolls instead. */
+.code-list, .drawer-scroll, .finding-list { flex: 1; min-height: 0; overflow: auto; margin: 0; }
 .code-list { list-style: none; padding: 10px 0; font-family: var(--font-mono); font-size: 12px; }
 .code-line {
   display: flex;
@@ -452,7 +453,7 @@ button, input, select, textarea { font: inherit; }
 .code-off { flex: none; color: var(--warn); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
 .code-flag { flex: none; cursor: help; }
 
-.var-table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 11.5px; }
+.var-table { width: 100%; margin: 0; border-collapse: collapse; font-family: var(--font-mono); font-size: 11.5px; }
 .var-table th, .var-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); text-align: left; }
 .var-table th {
   position: sticky;

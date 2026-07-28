@@ -82,10 +82,13 @@ export function namingRules(bot: Taskbot): Finding[] {
         })
       }
     }
+    // An undocumented input/output is part of the taskbot's contract with its callers;
+    // an undocumented local only costs the next reader of this one file.
     if (!v.description.trim()) {
+      const isContract = v.input || v.output
       out.push({
-        ruleId: 'VAR_NO_DESCRIPTION',
-        severity: 'warn',
+        ruleId: isContract ? 'VAR_NO_DESCRIPTION' : 'VAR_NO_DESCRIPTION_LOCAL',
+        severity: isContract ? 'warn' : 'info',
         botPath: bot.path,
         varName: v.name,
         params: { name: v.name },

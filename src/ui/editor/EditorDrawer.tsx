@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { isComment, type AAValue, type Action, type Finding, type ProjectAnalysis } from '../../core/model'
+import { isMessageBox } from '../../core/rules/messagebox'
 import { useT } from '../i18n'
 import { typeColor } from '../canvas/nodeTypes'
 
@@ -96,7 +97,7 @@ export default function EditorDrawer({
               'code-line',
               isComment(a) ? 'comment' : '',
               a.disabled || !a.reachable ? 'disabled' : '',
-              a.commandName === 'messageBox' ? 'msgbox' : '',
+              isMessageBox(a) ? 'msgbox' : '',
             ]
               .filter(Boolean)
               .join(' ')
@@ -119,6 +120,7 @@ export default function EditorDrawer({
       )}
 
       {tab === 'vars' && (
+        <div className="drawer-scroll">
         <table className="var-table">
           <thead>
             <tr>
@@ -152,6 +154,7 @@ export default function EditorDrawer({
             })}
           </tbody>
         </table>
+        </div>
       )}
 
       {tab === 'findings' && (
