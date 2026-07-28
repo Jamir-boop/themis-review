@@ -50,7 +50,7 @@ export function buildGraph(taskbots: Taskbot[]): GraphResult {
       // caller-side: expression references undeclared caller vars
       for (const input of call.inputs) {
         for (const cv of input.callerVars) {
-          if (!declared.has(cv) && !isSystemVar(cv)) {
+          if (!declared.has(cv)) {
             findings.push({
               ruleId: 'CALL_VAR_UNDECLARED',
               severity: 'error',
@@ -65,9 +65,4 @@ export function buildGraph(taskbots: Taskbot[]): GraphResult {
     }
   }
   return { edges: [...edgeMap.values()], ghostPaths: [...ghosts], findings }
-}
-
-/** $System:...$, $SystemVariablesPackage:...$ etc. — the ref extractor already stops at ':', so these come through as bare package names. */
-function isSystemVar(name: string): boolean {
-  return name === 'System' || name === 'SystemVariablesPackage' || name.startsWith('System')
 }

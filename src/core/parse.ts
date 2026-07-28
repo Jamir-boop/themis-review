@@ -17,8 +17,8 @@ interface RawTaskbot {
   packages?: { name: string; version: string }[]
 }
 
-/** Matches $varName$ / $varName{key}$ references; stops at ':' so $System:X$ yields 'System' (filtered later). */
-const VAR_REF = /\$([A-Za-z][A-Za-z0-9_]*)(?=[{$:])/g
+/** Matches $varName$ / $varName{key}$ references. Package-qualified system vars ($System:AATaskName$) are excluded by requiring '{' or '$' next. */
+const VAR_REF = /\$([A-Za-z][A-Za-z0-9_]*)(?=[{$])/g
 
 export function extractVarRefs(text: string): string[] {
   const out: string[] = []
