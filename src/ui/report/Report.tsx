@@ -151,6 +151,8 @@ export default function Report({
       ))}
       <footer className="report-foot">
         {t('report.generatedBy')} · {date}
+        <br />
+        {t('credit')}
       </footer>
     </div>
   )

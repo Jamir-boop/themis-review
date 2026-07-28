@@ -1,30 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { isComment, type AAValue, type Action, type Finding, type ProjectAnalysis, type Severity } from '../../core/model'
+import { isComment, type Action, type Finding, type ProjectAnalysis, type Severity } from '../../core/model'
 import { isMessageBox } from '../../core/rules/messagebox'
 import { useT } from '../i18n'
 import { typeColor } from '../canvas/nodeTypes'
+import { describeAction, glyphFor, GLYPH_PATH } from './describe'
 
 type Tab = 'code' | 'vars' | 'findings'
 
-/** short human summary of an action's payload for the code listing */
-function summarize(a: Action): string {
-  const texts: string[] = []
-  const walk = (v: AAValue | undefined) => {
-    if (v == null || typeof v !== 'object') return
-    if (typeof v.expression === 'string' && v.expression) texts.push(v.expression)
-    else if (typeof v.string === 'string' && v.string) texts.push(v.string)
-    for (const k of Object.keys(v)) {
-      const c = (v as Record<string, unknown>)[k]
-      if (Array.isArray(c)) c.forEach((x) => walk(x as AAValue))
-      else if (c && typeof c === 'object') walk(c as AAValue)
-    }
-  }
-  for (const at of a.attributes) walk(at.value)
-  let s = texts.join(' · ')
-  // comments store html
-  s = s.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
-  if (a.returnTo?.variableName) s += ` → $${a.returnTo.variableName}$`
-  return s.length > 120 ? s.slice(0, 117) + '…' : s
+function ActionGlyph({ action }: { action: Action }) {
+  return (
+    <svg className="code-glyph" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+      <path d={GLYPH_PATH[glyphFor(action)]} fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
 }
 
 const SEV_ICON = { error: '🔴', warn: '🟡', info: '🔵' } as const
@@ -133,10 +121,11 @@ export default function EditorDrawer({
                 {Array.from({ length: a.depth }, (_, i) => (
                   <span key={i} className="indent-guide" />
                 ))}
-                <span className="code-cmd">{a.commandName}</span>
-                <span className="code-pkg">{a.packageName}</span>
-                <span className="code-sum">{summarize(a)}</span>
-                {(a.disabled || !a.reachable) && <span className="code-off">{t('editor.disabled')}</span>}
+                <span className="code-card">
+                  <ActionGlyph action={a} />
+                  <span className="code-label">{describeAction(a)}</span>
+                  {(a.disabled || !a.reachable) && <span className="code-off">{t('editor.disabled')}</span>}
+                </span>
                 {fs.map((f, i) => (
                   <span key={i} className="code-flag" title={t(`rule.${f.ruleId}.msg`, f.params)}>
                     {SEV_ICON[f.severity]}

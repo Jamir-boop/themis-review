@@ -73,6 +73,7 @@ export default function DropZone({ onAnalyzed }: { onAnalyzed: (a: ProjectAnalys
         </div>
       </div>
       {error && <p className="error">{error}</p>}
+      <footer className="credit">{t('credit')}</footer>
       <input
         ref={inputRef}
         type="file"

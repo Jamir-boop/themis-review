@@ -265,11 +265,12 @@ button, input, select, textarea { font: inherit; }
   margin: 0;
   max-width: 18ch;
   font-family: var(--font-display);
-  font-size: clamp(2.4rem, min(8.25vw, 16vh), 8.25rem);
-  font-variation-settings: 'wght' 320;
-  font-weight: 320;
-  line-height: 0.88;
-  letter-spacing: 0.025em;
+  /* ceiling kept low so a long phrase still fits above the drop module */
+  font-size: clamp(2rem, min(5.5vw, 11vh), 5.5rem);
+  font-variation-settings: 'wght' 600;
+  font-weight: 600;
+  line-height: 0.95;
+  letter-spacing: 0.015em;
 }
 .display > span { display: block; }
 .hero-hint {
@@ -282,6 +283,7 @@ button, input, select, textarea { font: inherit; }
 }
 
 .dropzone {
+  flex: none; /* never let the headline squeeze the drop module */
   width: min(100%, 880px);
   margin-top: clamp(12px, 2.5vh, 24px);
   overflow: hidden;
@@ -291,7 +293,13 @@ button, input, select, textarea { font: inherit; }
   cursor: pointer;
 }
 .dropzone.drag { border-color: var(--accent); }
-.dropzone-tabs { display: flex; gap: 20px; padding: 12px 18px 0; border-bottom: 1px solid var(--border); }
+.dropzone-tabs {
+  display: flex;
+  gap: 20px;
+  min-height: 36px;
+  padding: 12px 18px 0;
+  border-bottom: 1px solid var(--border);
+}
 .dropzone-tab {
   padding: 0 0 12px;
   border-bottom: 2px solid var(--accent);
@@ -303,6 +311,7 @@ button, input, select, textarea { font: inherit; }
   display: flex;
   align-items: center;
   gap: 14px;
+  min-height: 56px;
   padding: 16px 18px;
   font-family: var(--font-mono);
   font-size: clamp(0.78rem, 1vw, 1rem);
@@ -310,6 +319,18 @@ button, input, select, textarea { font: inherit; }
 .prompt { color: var(--accent); }
 .dropzone-cmd { flex: 1; color: var(--text); }
 .error { color: var(--error); font-family: var(--font-mono); font-size: 0.85rem; }
+.credit {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+  color: var(--text-disabled);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+}
 
 /* ---------- canvas ---------- */
 .canvas-wrap { flex: 1; position: relative; min-height: 0; }
@@ -465,7 +486,8 @@ button, input, select, textarea { font: inherit; }
 .drawer-title {
   font-family: var(--font-display);
   font-size: 1.9rem;
-  font-weight: 340;
+  font-weight: 600;
+  font-variation-settings: 'wght' 600;
   line-height: 0.95;
 }
 .drawer-title .tb-grade { font-family: var(--font-mono); font-size: 0.8rem; letter-spacing: 0.08em; }
@@ -487,35 +509,52 @@ button, input, select, textarea { font: inherit; }
 
 /* A <table> is not a scroll container, so it needs a wrapper or the page scrolls instead. */
 .code-list, .drawer-scroll { flex: 1; min-height: 0; overflow: auto; margin: 0; }
+/* Control Room task-bot view, restyled for Amber Black: number gutter, then one
+   card per action carrying a package glyph and a human label. */
 .code-list { list-style: none; padding: 10px 0; font-family: var(--font-mono); font-size: 12px; }
 .code-line {
   display: flex;
   align-items: stretch;
   gap: 0;
-  padding: 3px 14px 3px 8px;
+  padding: 2px 14px 2px 8px;
   border-left: 3px solid transparent;
 }
-.code-line:hover { background: var(--accent); color: var(--text-on-accent); }
-.code-line:hover * { color: currentColor; border-color: currentColor; }
-.code-line.flash { background: var(--accent); color: var(--text-on-accent); }
-.code-line.flash * { color: currentColor; border-color: currentColor; }
 /* gutter: number stays in its own column no matter the nesting depth */
-.code-no { flex: none; width: 40px; margin-right: 10px; text-align: right; color: var(--text-muted); }
+.code-no {
+  flex: none;
+  width: 40px;
+  margin-right: 10px;
+  padding-top: 6px;
+  text-align: right;
+  color: var(--text-muted);
+}
 /* one dim guide per nesting level, editor style */
 .indent-guide { flex: none; width: 18px; border-left: 1px solid var(--border); }
-.code-cmd, .code-pkg, .code-sum, .code-off, .code-flag { align-self: baseline; }
-.code-cmd { margin-right: 10px; }
-.code-pkg { margin-right: 10px; }
-.code-sum { margin-right: 10px; }
-.code-cmd { flex: none; color: var(--accent); }
-.code-pkg { flex: none; color: var(--text-muted); font-size: 10px; }
-.code-sum { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
-.code-line.comment .code-cmd, .code-line.comment .code-sum { color: var(--text-muted); font-style: italic; }
-.code-line.disabled { color: var(--text-disabled); }
-.code-line.disabled .code-cmd, .code-line.disabled .code-sum, .code-line.disabled .code-pkg { color: var(--text-disabled); }
-.code-line.msgbox { border-left-color: var(--error); }
+.code-card {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+}
+.code-glyph { flex: none; color: var(--accent); }
+.code-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.code-line:hover .code-card, .code-line.flash .code-card {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--text-on-accent);
+}
+.code-line:hover .code-card *, .code-line.flash .code-card * { color: currentColor; }
+.code-line:hover .code-no, .code-line.flash .code-no { color: var(--accent); }
+.code-line.comment .code-card { background: transparent; border-style: dashed; }
+.code-line.comment .code-label { color: var(--text-muted); font-style: italic; }
+.code-line.disabled .code-card { opacity: 0.5; }
+.code-line.msgbox .code-card { border-left: 3px solid var(--error); }
 .code-off { flex: none; color: var(--warn); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
-.code-flag { flex: none; cursor: help; }
+.code-flag { flex: none; cursor: help; align-self: center; }
 
 .var-table { width: 100%; margin: 0; border-collapse: collapse; font-family: var(--font-mono); font-size: 11.5px; }
 .var-table th, .var-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); text-align: left; }
@@ -583,12 +622,13 @@ button, input, select, textarea { font: inherit; }
   max-width: 14ch;
   font-family: var(--font-display);
   font-size: clamp(2rem, min(5.5vw, 11vh), 5rem);
-  font-weight: 320;
+  font-weight: 600;
+  font-variation-settings: 'wght' 600;
   line-height: 0.9;
   letter-spacing: 0.02em;
 }
 .report-score { padding: 14px 22px; border: 1px solid var(--accent); text-align: center; }
-.report-score-num { display: block; font-family: var(--font-display); font-size: 3.4rem; font-weight: 340; line-height: 1; }
+.report-score-num { display: block; font-family: var(--font-display); font-size: 3.4rem; font-weight: 600; font-variation-settings: 'wght' 600; line-height: 1; }
 .report-score-grade { font-family: var(--font-mono); font-size: 1rem; font-weight: 700; letter-spacing: 0.14em; }
 .report-meta {
   margin: 18px 0 44px;
@@ -602,7 +642,8 @@ button, input, select, textarea { font: inherit; }
   margin: 0 0 14px;
   font-family: var(--font-display);
   font-size: clamp(1.5rem, min(3vw, 6vh), 2.8rem);
-  font-weight: 330;
+  font-weight: 550;
+  font-variation-settings: 'wght' 550;
   line-height: 0.95;
 }
 /* Wide table scrolls inside its own box so the page never scrolls sideways. */

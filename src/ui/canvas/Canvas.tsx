@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   applyNodeChanges,
   Background,
@@ -172,13 +172,21 @@ export default function Canvas({
   const { nodes: rawNodes, edges } = useMemo(() => buildFlow(analysis), [analysis])
   const [nodes, setNodes] = useState<FlowNode[] | null>(null)
   const [rf, setRf] = useState<ReactFlowInstance<FlowNode, Edge> | null>(null)
+  // nodes are read through a ref here: keeping them in the effect's deps made every
+  // drag (which rewrites the array) recentre the viewport mid-gesture
+  const nodesRef = useRef<FlowNode[] | null>(null)
+  nodesRef.current = nodes
+  const handledFocus = useRef(-1)
+  // flips once when the async layout lands; unlike `nodes` it doesn't change on drag
+  const layoutReady = nodes !== null
 
   // centre the node a report row asked for. Uses the laid-out geometry rather than
   // fitView, which silently does nothing until React Flow has measured the nodes.
   useEffect(() => {
-    if (!focus || !rf) return
-    const node = nodes?.find((n) => n.id === focus.path)
+    if (!focus || !rf || focus.nonce === handledFocus.current) return
+    const node = nodesRef.current?.find((n) => n.id === focus.path)
     if (!node) return
+    handledFocus.current = focus.nonce
     const w = node.type === 'file' ? FILE_NODE_WIDTH : NODE_WIDTH
     const h = node.type === 'file' ? FILE_NODE_HEIGHT : nodeHeight(node.data as TBNodeData)
     const zoom = Math.min(Math.max(rf.getZoom(), 0.6), 1.2)
@@ -197,7 +205,8 @@ export default function Canvas({
       })
       return changed ? next : ns
     })
-  }, [focus, rf, nodes])
+    // `nodes` deliberately excluded — see nodesRef above
+  }, [focus, rf, layoutReady])
 
   useEffect(() => {
     let alive = true
