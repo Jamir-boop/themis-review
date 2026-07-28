@@ -22,7 +22,8 @@ export default function Report({ analysis }: { analysis: ProjectAnalysis }) {
       </p>
 
       <h2>{t('report.summary')}</h2>
-      <table className="report-table">
+      <div className="table-scroll">
+        <table className="report-table">
         <thead>
           <tr>
             <th>{t('report.taskbot')}</th>
@@ -53,8 +54,9 @@ export default function Report({ analysis }: { analysis: ProjectAnalysis }) {
               </tr>
             )
           })}
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      </div>
 
       {analysis.taskbots.map((b) => {
         const fs = analysis.findings

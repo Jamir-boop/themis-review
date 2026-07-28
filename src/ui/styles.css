@@ -211,17 +211,19 @@ button, input, select, textarea { font: inherit; }
 .grade-F { color: #fc8181; }
 
 /* ---------- hero + terminal drop module ---------- */
+/* Every vertical size below is driven by min(vw, vh) so wide-but-short viewports
+   (and zoomed-in windows) shrink the type instead of pushing it off screen. */
 .hero {
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 0;
-  padding: clamp(48px, 8vw, 120px) clamp(22px, 4.4vw, 72px);
+  padding: clamp(20px, min(8vw, 9vh), 120px) clamp(22px, 4.4vw, 72px);
   overflow: auto;
 }
 .kicker {
-  margin: 0 0 clamp(20px, 2.3vw, 38px);
+  margin: 0 0 clamp(12px, min(2.3vw, 3.5vh), 38px);
   font-family: var(--font-mono);
   font-size: clamp(0.72rem, 0.82vw, 0.95rem);
   letter-spacing: 0.18em;
@@ -231,7 +233,7 @@ button, input, select, textarea { font: inherit; }
   margin: 0;
   max-width: 13ch;
   font-family: var(--font-display);
-  font-size: clamp(3.5rem, 8.25vw, 8.25rem);
+  font-size: clamp(2.4rem, min(8.25vw, 16vh), 8.25rem);
   font-variation-settings: 'wght' 320;
   font-weight: 320;
   line-height: 0.88;
@@ -239,7 +241,7 @@ button, input, select, textarea { font: inherit; }
 }
 .display > span { display: block; }
 .hero-hint {
-  margin: clamp(28px, 3vw, 48px) 0 0;
+  margin: clamp(14px, min(3vw, 4vh), 48px) 0 0;
   max-width: 46ch;
   color: var(--text-muted);
   font-family: var(--font-mono);
@@ -249,7 +251,7 @@ button, input, select, textarea { font: inherit; }
 
 .dropzone {
   width: min(100%, 880px);
-  margin-top: 18px;
+  margin-top: clamp(12px, 2.5vh, 24px);
   overflow: hidden;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-small);
@@ -486,15 +488,17 @@ button, input, select, textarea { font: inherit; }
   width: 100%;
   max-width: 1100px;
   margin: 0 auto;
-  padding: clamp(32px, 5vw, 72px) clamp(22px, 4.4vw, 72px);
-  overflow: auto;
+  padding: clamp(24px, min(5vw, 6vh), 72px) clamp(22px, 4.4vw, 72px);
+  min-width: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 .report-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; }
 .report-head h1 {
   margin: 0;
   max-width: 14ch;
   font-family: var(--font-display);
-  font-size: clamp(2.5rem, 5.5vw, 5rem);
+  font-size: clamp(2rem, min(5.5vw, 11vh), 5rem);
   font-weight: 320;
   line-height: 0.9;
   letter-spacing: 0.02em;
@@ -513,11 +517,13 @@ button, input, select, textarea { font: inherit; }
 .report h2 {
   margin: 0 0 14px;
   font-family: var(--font-display);
-  font-size: clamp(1.8rem, 3vw, 2.8rem);
+  font-size: clamp(1.5rem, min(3vw, 6vh), 2.8rem);
   font-weight: 330;
   line-height: 0.95;
 }
-.report-table { width: 100%; border-collapse: collapse; margin-bottom: 36px; font-family: var(--font-mono); font-size: 12px; }
+/* Wide table scrolls inside its own box so the page never scrolls sideways. */
+.table-scroll { overflow-x: auto; margin-bottom: 36px; }
+.report-table { width: 100%; min-width: 620px; border-collapse: collapse; font-family: var(--font-mono); font-size: 12px; }
 .report-table th, .report-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); text-align: left; }
 .report-table th { color: var(--text-muted); font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; }
 .report-table tbody tr:hover { background: var(--accent); color: var(--text-on-accent); }
@@ -551,12 +557,44 @@ button, input, select, textarea { font: inherit; }
   text-transform: uppercase;
 }
 
-@media (max-width: 960px) {
-  .header { grid-template-columns: auto 1fr; row-gap: 12px; }
+/* Short viewports (small wide/square windows, or a zoomed-in browser):
+   give vertical space back to the content instead of the chrome. */
+@media (max-height: 620px) {
+  .header { padding: 8px clamp(14px, 2.4vw, 34px); }
+  .brand { font-size: 0.95rem; }
+  .tab { padding: 6px 0; font-size: 0.82rem; }
+  .btn { min-height: 34px; padding: 8px 14px; font-size: 0.76rem; }
+  .score-badge { font-size: 0.66rem; }
+  .score-badge-label, .score-badge-value { padding: 6px 10px; }
+  .drawer-head { padding: 12px 16px; }
+  .drawer-title { font-size: 1.4rem; }
+  .drawer-stats { padding: 8px 16px; }
+  .tabs.small { padding-top: 8px; }
+  .tabs.small .tab { padding-bottom: 8px; }
+  .report-score { padding: 10px 16px; }
+  .report-score-num { font-size: 2.4rem; }
+}
+@media (max-height: 480px) {
+  .score-badge-label { display: none; }
+  .hero-hint { display: none; }
+}
+
+/* Drop the widest chrome first so the header stays one row on small wide screens. */
+@media (max-width: 1180px) {
+  .score-badge-label { display: none; }
+  .header { gap: 14px; }
+}
+@media (max-width: 900px) {
+  .header { padding-inline: 14px; }
+  .btn { padding: 8px 12px; font-size: 0.74rem; }
+  .tabs { gap: 14px; }
+}
+/* Only stack the header when one row genuinely cannot fit. */
+@media (max-width: 700px) {
+  .header { grid-template-columns: auto 1fr; row-gap: 10px; }
   .brand { grid-column: 1; grid-row: 1; align-items: flex-start; }
   .header-right { grid-column: 2; grid-row: 1; }
   .header-left { grid-column: 1 / -1; grid-row: 2; }
-  .score-badge-label { display: none; }
 }
 @media (max-width: 600px) {
   .btn { width: 100%; }
@@ -589,6 +627,8 @@ button, input, select, textarea { font: inherit; }
   .no-print { display: none !important; }
   .app { height: auto; }
   .report { max-width: none; padding: 0; overflow: visible; }
+  .table-scroll { overflow: visible; }
+  .report-table { min-width: 0; }
   .report-score { border-color: var(--accent); }
   .report-bot { break-inside: avoid-page; }
   .report-finding { break-inside: avoid; background: #fff; }
