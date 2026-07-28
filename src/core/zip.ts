@@ -20,9 +20,10 @@ export function asText(e: ZipEntry): string {
   return decoder.decode(e.data)
 }
 
-/** Taskbot source files live under .../tasks/<Name> with no extension; Metadata dirs hold pngs. */
-export function isTaskbotPath(path: string): boolean {
-  const parts = path.split('/')
-  const i = parts.indexOf('tasks')
-  return i >= 0 && i === parts.length - 2 && !parts[parts.length - 1].includes('.')
+/** Taskbot files carry no extension. The folder they sit in is localized by the
+ *  Control Room UI language (tasks/Tareas/Aufgaben/...), so the name is never matched —
+ *  parseTaskbot validates the JSON shape and analyze skips whatever fails. */
+export function isTaskbotCandidate(path: string): boolean {
+  const basename = path.split('/').pop() ?? ''
+  return basename.length > 0 && !basename.includes('.')
 }

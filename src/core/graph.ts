@@ -69,6 +69,18 @@ export function buildGraph(taskbots: Taskbot[]): GraphResult {
   return { edges, ghostPaths: [...ghosts], findings }
 }
 
+/** Execution order of the Run Task actions inside each caller, keyed `botPath|line`.
+ *  Actions run top to bottom, so line order is the sequence a reader follows. */
+export function callSequence(taskbots: Taskbot[]): Map<string, number> {
+  const order = new Map<string, number>()
+  for (const bot of taskbots) {
+    ;[...bot.calls]
+      .sort((a, b) => a.line - b.line)
+      .forEach((c, i) => order.set(bot.path + '|' + c.line, i + 1))
+  }
+  return order
+}
+
 /** Depth in the call graph: a master is level 1, what it calls is level 2, and so on.
  *  Level 3+ means the flow is buried too deep to follow; the messaging utility is the
  *  one exception because every taskbot is expected to call it directly. */

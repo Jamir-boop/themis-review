@@ -3,7 +3,7 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { analyzeZips } from '../src/core/analyze'
 import { parseTaskbot } from '../src/core/parse'
-import { buildGraph, callDepth } from '../src/core/graph'
+import { buildGraph, callDepth, callSequence } from '../src/core/graph'
 import { messageBoxRules } from '../src/core/rules/messagebox'
 import { structureRules } from '../src/core/rules/structure'
 
@@ -104,6 +104,15 @@ describe('all zips combined', () => {
     }
   })
 
+  it('lists every taskbot and file once, even when zips overlap', () => {
+    const botPaths = a.taskbots.map((t) => t.path)
+    expect(new Set(botPaths).size).toBe(botPaths.length)
+    const filePaths = a.otherFiles.map((f) => f.path)
+    expect(new Set(filePaths).size).toBe(filePaths.length)
+    const edgeKeys = a.fileEdges.map((fe) => fe.from + '|' + fe.to)
+    expect(new Set(edgeKeys).size).toBe(edgeKeys.length)
+  })
+
   it('links referenced static files to their taskbots', () => {
     expect(a.fileEdges.length).toBeGreaterThan(0)
     for (const fe of a.fileEdges) {
@@ -117,6 +126,43 @@ describe('all zips combined', () => {
   it('never flags utilidad_mensajeria for call depth', () => {
     const depthFindings = a.findings.filter((f) => f.ruleId === 'CALL_DEPTH')
     expect(depthFindings.every((f) => !f.params.callee.startsWith('utilidad_mensajeria'))).toBe(true)
+  })
+})
+
+describe('export with localized folder names', () => {
+  // this Control Room export uses Tareas/ and Documentos/ instead of tasks/ and docs/
+  const a = analyzeZips(load('00_Master_Extractos_IBK.zip'))
+
+  it('finds the taskbots despite the Spanish folders', () => {
+    expect(a.taskbots.length).toBe(14)
+    expect(a.taskbots.map((t) => t.name)).toContain('00_Master_Extractos_IBK')
+    expect(a.taskbots.every((t) => t.path.includes('/Tareas/'))).toBe(true)
+  })
+
+  it('resolves the call graph and folder of each bot', () => {
+    const master = a.taskbots.find((t) => t.name === '00_Master_Extractos_IBK')!
+    expect(master.calls.length).toBeGreaterThan(0)
+    expect(master.folder).toBe('Automation Anywhere/Bots/TESORERIA/002_DescargaExtractosIBK')
+    expect(a.edges.length).toBeGreaterThan(0)
+  })
+
+  it('classifies localized config/asset folders and links them', () => {
+    expect(a.otherFiles.some((f) => f.kind === 'config' && f.path.includes('/Documentos/config/'))).toBe(true)
+    expect(a.otherFiles.some((f) => f.kind === 'asset' && f.path.includes('/Documentos/assets/'))).toBe(true)
+    expect(a.fileEdges.some((fe) => fe.to.endsWith('.xml'))).toBe(true)
+  })
+
+  it('leaves recorder screenshots out of the file list', () => {
+    expect(a.otherFiles.some((f) => /Metadata\//.test(f.path))).toBe(false)
+  })
+
+  it('numbers the master call sequence from top to bottom', () => {
+    const master = a.taskbots.find((t) => t.name === '00_Master_Extractos_IBK')!
+    const seq = callSequence(a.taskbots)
+    const lines = [...master.calls].sort((x, y) => x.line - y.line).map((c) => c.line)
+    expect(lines.map((l) => seq.get(master.path + '|' + l))).toEqual(lines.map((_, i) => i + 1))
+    // first executed call is the one on the earliest line
+    expect(seq.get(master.path + '|' + Math.min(...lines))).toBe(1)
   })
 })
 

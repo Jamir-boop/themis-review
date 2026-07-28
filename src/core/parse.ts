@@ -66,6 +66,10 @@ function parseCall(node: RawNode, line: number, reachable: boolean): Call | unde
 
 export function parseTaskbot(path: string, sourceZip: string, json: string): Taskbot {
   const raw = JSON.parse(json) as RawTaskbot
+  // Extensionless files are only candidates; this is what actually identifies a taskbot.
+  if (!Array.isArray(raw.nodes) || !Array.isArray(raw.variables)) {
+    throw new Error('not a taskbot: ' + path)
+  }
   const actions: Action[] = []
   const calls: Call[] = []
   const varRefs: Record<string, number[]> = {}
@@ -120,7 +124,8 @@ export function parseTaskbot(path: string, sourceZip: string, json: string): Tas
 
   const parts = path.split('/')
   const name = parts[parts.length - 1]
-  const folder = parts.slice(0, parts.indexOf('tasks')).join('/')
+  // bot folder = grandparent of the task file (…/<bot>/<tasks|Tareas>/<Name>)
+  const folder = parts.slice(0, -2).join('/')
 
   const variables: Variable[] = (raw.variables ?? []).map((v) => ({
     name: v.name ?? '',

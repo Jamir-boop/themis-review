@@ -1,4 +1,4 @@
-import { asText, isTaskbotPath, readZip, type ZipEntry } from './zip'
+import { asText, isTaskbotCandidate, readZip, type ZipEntry } from './zip'
 import { parseTaskbot } from './parse'
 import { buildGraph } from './graph'
 import { computeMetrics } from './metrics'
@@ -18,7 +18,7 @@ export function analyzeZips(zips: { name: string; data: Uint8Array }[]): Project
 
   for (const e of entries) {
     if (e.path === 'manifest.json') continue
-    if (isTaskbotPath(e.path)) {
+    if (isTaskbotCandidate(e.path)) {
       if (seenPaths.has(e.path)) continue // same bot in several zips: first wins
       try {
         const bot = parseTaskbot(e.path, e.sourceZip, asText(e))
@@ -29,8 +29,12 @@ export function analyzeZips(zips: { name: string; data: Uint8Array }[]): Project
         // extensionless but not a taskbot JSON — fall through to otherFiles
       }
     }
-    if (!/\/tasks\/[^/]+Metadata\//.test(e.path)) {
-      const kind = /\/docs\/config\//.test(e.path) ? 'config' : /\/docs\/assets\//.test(e.path) ? 'asset' : 'other'
+    // recorder screenshots live in <TaskName>Metadata/ next to the taskbot
+    if (!/[^/]+Metadata\//.test(e.path) && !seenPaths.has(e.path)) {
+      seenPaths.add(e.path) // shared assets ship in several zips: first wins
+      // folder names are localized (docs/Documentos), so classify by the parent dir name
+      const parent = e.path.split('/').at(-2)?.toLowerCase() ?? ''
+      const kind = parent === 'config' ? 'config' : parent === 'assets' ? 'asset' : 'other'
       otherFiles.push({ path: e.path, sourceZip: e.sourceZip, size: e.data.length, kind })
     }
   }

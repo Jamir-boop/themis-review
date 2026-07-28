@@ -292,8 +292,9 @@ button, input, select, textarea { font: inherit; }
 .react-flow__background-pattern { color: var(--border); }
 .react-flow__edge.edge-call path { stroke: var(--accent); stroke-width: 2.5; }
 .react-flow__edge.edge-wire path { opacity: 0.9; }
-.react-flow__edge-text { fill: var(--accent); font-family: var(--font-mono); font-size: 10px; }
-.react-flow__edge-textbg { fill: var(--bg); }
+/* call-order badge sitting on the edge */
+.react-flow__edge-text { fill: var(--accent); font-family: var(--font-mono); font-size: 11px; font-weight: 700; }
+.react-flow__edge-textbg { fill: var(--bg); stroke: var(--accent); stroke-width: 1; }
 .react-flow__controls { box-shadow: none; }
 .react-flow__controls-button {
   border: 1px solid var(--border-strong);
@@ -330,6 +331,7 @@ button, input, select, textarea { font: inherit; }
 }
 .legend i { display: inline-block; width: 18px; height: 2px; margin-right: 8px; vertical-align: middle; }
 .leg-call { background: var(--accent); height: 3px; }
+.leg-order { background: transparent; border: 1px solid var(--accent); height: 12px; width: 12px !important; }
 .leg-wire { background: var(--info); }
 .leg-ghost { background: transparent; border-top: 2px dashed var(--border-strong); height: 0; }
 
