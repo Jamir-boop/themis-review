@@ -1,5 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
-import { applyNodeChanges, Background, Controls, MarkerType, MiniMap, ReactFlow, type Edge, type Node } from '@xyflow/react'
+import {
+  applyNodeChanges,
+  Background,
+  Controls,
+  MarkerType,
+  MiniMap,
+  ReactFlow,
+  type Edge,
+  type Node,
+  type ReactFlowInstance,
+} from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import type { ProjectAnalysis } from '../../core/model'
 import { callSequence } from '../../core/graph'
@@ -157,10 +167,45 @@ async function layout(nodes: FlowNode[], edges: Edge[]): Promise<FlowNode[]> {
   return nodes.map((n) => ({ ...n, position: pos.get(n.id) ?? { x: 0, y: 0 } }))
 }
 
-export default function Canvas({ analysis, onSelect }: { analysis: ProjectAnalysis; onSelect: (path: string) => void }) {
+export default function Canvas({
+  analysis,
+  onSelect,
+  focus,
+}: {
+  analysis: ProjectAnalysis
+  onSelect: (path: string) => void
+  focus?: { path: string; nonce: number } | null
+}) {
   const t = useT()
   const { nodes: rawNodes, edges } = useMemo(() => buildFlow(analysis), [analysis])
   const [nodes, setNodes] = useState<FlowNode[] | null>(null)
+  const [rf, setRf] = useState<ReactFlowInstance<FlowNode, Edge> | null>(null)
+
+  // centre the node a report row asked for. Uses the laid-out geometry rather than
+  // fitView, which silently does nothing until React Flow has measured the nodes.
+  useEffect(() => {
+    if (!focus || !rf) return
+    const node = nodes?.find((n) => n.id === focus.path)
+    if (!node) return
+    const w = node.type === 'file' ? FILE_NODE_WIDTH : NODE_WIDTH
+    const h = node.type === 'file' ? FILE_NODE_HEIGHT : nodeHeight(node.data as TBNodeData)
+    const zoom = Math.min(Math.max(rf.getZoom(), 0.6), 1.2)
+    // duration 0: an animated pan depends on requestAnimationFrame, which never runs
+    // while the tab is backgrounded, leaving the viewport silently unmoved
+    rf.setCenter(node.position.x + w / 2, node.position.y + h / 2, { zoom, duration: 0 })
+    // must return the same array when nothing changes, or this effect re-triggers itself
+    setNodes((ns) => {
+      if (!ns) return ns
+      let changed = false
+      const next = ns.map((n) => {
+        const selected = n.id === focus.path
+        if (n.selected === selected) return n
+        changed = true
+        return { ...n, selected }
+      })
+      return changed ? next : ns
+    })
+  }, [focus, rf, nodes])
 
   useEffect(() => {
     let alive = true
@@ -179,6 +224,7 @@ export default function Canvas({ analysis, onSelect }: { analysis: ProjectAnalys
       nodes={nodes}
       edges={edges}
       nodeTypes={nodeTypes}
+      onInit={setRf}
       onNodesChange={(chs) => setNodes((ns) => (ns ? applyNodeChanges(chs, ns) : ns))}
       onNodeClick={(_, n) => {
         if (n.type === 'taskbot' && !(n.data as TBNodeData).ghost) onSelect(n.id)

@@ -14,6 +14,14 @@ function Shell() {
   const [analysis, setAnalysis] = useState<ProjectAnalysis | null>(null)
   const [view, setView] = useState<View>('map')
   const [selected, setSelected] = useState<string | null>(null)
+  // bumped on every jump so clicking the same row twice re-centers the node
+  const [focus, setFocus] = useState<{ path: string; nonce: number } | null>(null)
+
+  const openOnMap = (path: string) => {
+    setSelected(path)
+    setFocus((f) => ({ path, nonce: (f?.nonce ?? 0) + 1 }))
+    setView('map')
+  }
 
   const exportPdf = () => {
     setView('report')
@@ -77,11 +85,11 @@ function Shell() {
       {!analysis && <DropZone onAnalyzed={setAnalysis} />}
       {analysis && view === 'map' && (
         <div className="canvas-wrap no-print">
-          <Canvas analysis={analysis} onSelect={setSelected} />
+          <Canvas analysis={analysis} onSelect={setSelected} focus={focus} />
           {selected && <EditorDrawer analysis={analysis} botPath={selected} onClose={() => setSelected(null)} />}
         </div>
       )}
-      {analysis && view === 'report' && <Report analysis={analysis} />}
+      {analysis && view === 'report' && <Report analysis={analysis} onSelectBot={openOnMap} />}
     </div>
   )
 }

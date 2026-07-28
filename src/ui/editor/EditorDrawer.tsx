@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { isComment, type AAValue, type Action, type Finding, type ProjectAnalysis } from '../../core/model'
+import { isComment, type AAValue, type Action, type Finding, type ProjectAnalysis, type Severity } from '../../core/model'
 import { isMessageBox } from '../../core/rules/messagebox'
 import { useT } from '../i18n'
 import { typeColor } from '../canvas/nodeTypes'
@@ -28,6 +28,7 @@ function summarize(a: Action): string {
 }
 
 const SEV_ICON = { error: '🔴', warn: '🟡', info: '🔵' } as const
+const SEVERITIES: Severity[] = ['error', 'warn', 'info']
 
 export default function EditorDrawer({
   analysis,
@@ -40,7 +41,7 @@ export default function EditorDrawer({
 }) {
   const t = useT()
   const [tab, setTab] = useState<Tab>('code')
-  const [filterRule, setFilterRule] = useState<string | null>(null)
+  const [filterSev, setFilterSev] = useState<Severity | null>(null)
   const [flashLine, setFlashLine] = useState<number | null>(null)
   const codeListRef = useRef<HTMLOListElement>(null)
   const bot = analysis.taskbots.find((b) => b.path === botPath)
@@ -79,8 +80,7 @@ export default function EditorDrawer({
     setTab('code')
   }
 
-  const ruleIds = [...new Set(findings.map((f) => f.ruleId))].sort()
-  const visibleFindings = filterRule ? findings.filter((f) => f.ruleId === filterRule) : findings
+  const visibleFindings = filterSev ? findings.filter((f) => f.severity === filterSev) : findings
 
   return (
     <aside className="drawer">
@@ -189,16 +189,16 @@ export default function EditorDrawer({
       {tab === 'findings' && (
         <div className="drawer-scroll">
           <div className="filter-chips">
-            <button className={filterRule === null ? 'chip active' : 'chip'} onClick={() => setFilterRule(null)}>
+            <button className={filterSev === null ? 'chip active' : 'chip'} onClick={() => setFilterSev(null)}>
               {t('editor.filter.all')} ({findings.length})
             </button>
-            {ruleIds.map((id) => (
+            {SEVERITIES.map((sev) => (
               <button
-                key={id}
-                className={filterRule === id ? 'chip active' : 'chip'}
-                onClick={() => setFilterRule(filterRule === id ? null : id)}
+                key={sev}
+                className={'chip sev-' + sev + (filterSev === sev ? ' active' : '')}
+                onClick={() => setFilterSev(filterSev === sev ? null : sev)}
               >
-                {id} ({findings.filter((f) => f.ruleId === id).length})
+                {SEV_ICON[sev]} {t('report.severity.' + sev)} ({findings.filter((f) => f.severity === sev).length})
               </button>
             ))}
           </div>

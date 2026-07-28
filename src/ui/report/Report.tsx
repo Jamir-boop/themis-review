@@ -20,7 +20,13 @@ function Th({ col, label, sort, onSort }: { col: SortCol; label: string; sort: S
   )
 }
 
-export default function Report({ analysis }: { analysis: ProjectAnalysis }) {
+export default function Report({
+  analysis,
+  onSelectBot,
+}: {
+  analysis: ProjectAnalysis
+  onSelectBot: (path: string) => void
+}) {
   const t = useT()
   const date = new Date().toISOString().slice(0, 10)
   // info findings are noise in a printed report; opt in when you want the full list
@@ -105,7 +111,7 @@ export default function Report({ analysis }: { analysis: ProjectAnalysis }) {
           </thead>
           <tbody>
             {rows.map((r) => (
-              <tr key={r.bot.path}>
+              <tr key={r.bot.path} className="row-link" title={t('report.openOnMap')} onClick={() => onSelectBot(r.bot.path)}>
                 <td>{r.bot.name}</td>
                 <td>{r.m.totalLines}</td>
                 <td>{r.m.commentLines}</td>

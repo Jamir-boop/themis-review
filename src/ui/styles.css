@@ -515,6 +515,9 @@ button, input, select, textarea { font: inherit; }
 }
 .chip:hover { border-color: var(--accent); color: var(--text); }
 .chip.active { border-color: var(--accent); background: var(--accent); color: var(--text-on-accent); }
+.chip.sev-error.active { border-color: var(--error); background: var(--error); }
+.chip.sev-warn.active { border-color: var(--warn); background: var(--warn); }
+.chip.sev-info.active { border-color: var(--info); background: var(--info); }
 
 .finding-list { list-style: none; display: flex; flex-direction: column; gap: 10px; padding: 16px 20px; margin: 0; }
 .finding.jumpable { cursor: pointer; }
@@ -607,6 +610,7 @@ button, input, select, textarea { font: inherit; }
 .sort-arrow { display: inline-block; width: 1em; margin-left: 4px; font-size: 0.75em; }
 .report-table th, .report-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); text-align: left; }
 .report-table th { color: var(--text-muted); font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; }
+.report-table tbody tr.row-link { cursor: pointer; }
 .report-table tbody tr:hover { background: var(--accent); color: var(--text-on-accent); }
 .report-table tbody tr:hover * { color: currentColor; }
 .report-bot { margin-top: 44px; padding-top: 20px; border-top: 1px solid var(--border-strong); }
