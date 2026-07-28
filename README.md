@@ -22,4 +22,4 @@ npm test       # analysis engine tests (requires sample zips in .data/)
 npm run build  # static build (deployed to GitHub Pages via Actions)
 ```
 
-Structure: `src/core` is the analysis engine (pure TypeScript, no React); `src/ui` is the interface (React + React Flow). See [plan.md](plan.md) for the full design.
+Structure: `src/core` is the analysis engine (pure TypeScript, no React); `src/ui` is the interface (React + React Flow).
