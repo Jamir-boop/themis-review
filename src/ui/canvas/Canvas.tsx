@@ -12,7 +12,6 @@ import {
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import type { ProjectAnalysis } from '../../core/model'
-import { callSequence } from '../../core/graph'
 import TaskbotNode from './TaskbotNode'
 import FileNode from './FileNode'
 import { FILE_NODE_HEIGHT, FILE_NODE_WIDTH, NODE_WIDTH, nodeHeight, typeColor, type FileNodeData, type TBNodeData } from './nodeTypes'
@@ -85,8 +84,6 @@ function buildFlow(a: ProjectAnalysis): { nodes: FlowNode[]; edges: Edge[] } {
     })
   }
 
-  const callOrder = callSequence(a.taskbots)
-
   const edges: Edge[] = []
   const seenWire = new Set<string>()
   for (const fe of a.fileEdges) {
@@ -100,10 +97,6 @@ function buildFlow(a: ProjectAnalysis): { nodes: FlowNode[]; edges: Edge[] } {
     })
   }
   for (const e of a.edges) {
-    const order = e.calls
-      .map((c) => callOrder.get(e.from + '|' + c.line))
-      .filter((n): n is number => n !== undefined)
-      .sort((x, y) => x - y)
     edges.push({
       id: 'call:' + e.from + '→' + e.to,
       source: e.from,
@@ -113,7 +106,6 @@ function buildFlow(a: ProjectAnalysis): { nodes: FlowNode[]; edges: Edge[] } {
       className: 'edge-call',
       animated: true,
       markerEnd: { type: MarkerType.ArrowClosed, width: 18, height: 18, color: '#ffb900' },
-      label: order.join('·'),
     })
     const callee = byPath.get(e.to)
     if (!callee) continue
@@ -240,9 +232,6 @@ export default function Canvas({
       <div className="legend">
         <span>
           <i className="leg-call" /> {t('canvas.legend.call')}
-        </span>
-        <span>
-          <i className="leg-order" /> {t('canvas.legend.order')}
         </span>
         <span>
           <i className="leg-wire" /> {t('canvas.legend.wire')}

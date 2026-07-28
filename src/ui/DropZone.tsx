@@ -1,10 +1,13 @@
-import { useRef, useState } from 'react'
+import { useContext, useRef, useState } from 'react'
 import { analyzeZips } from '../core/analyze'
 import type { ProjectAnalysis } from '../core/model'
-import { useT } from './i18n'
+import { HERO_PHRASES, LangContext, useT } from './i18n'
+import heroArt from './assets/themis-dither-wide.png'
 
 export default function DropZone({ onAnalyzed }: { onAnalyzed: (a: ProjectAnalysis) => void }) {
   const t = useT()
+  const { lang } = useContext(LangContext)
+  const [phraseIdx] = useState(() => Math.floor(Math.random() * HERO_PHRASES.en.length))
   const [drag, setDrag] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -31,12 +34,11 @@ export default function DropZone({ onAnalyzed }: { onAnalyzed: (a: ProjectAnalys
 
   return (
     <main className="hero">
+      <div className="hero-visual" aria-hidden="true">
+        <img src={heroArt} alt="" />
+      </div>
       <p className="kicker">{t('drop.kicker')}</p>
-      <h1 className="display">
-        <span>{t('drop.h1a')}</span>
-        <span>{t('drop.h1b')}</span>
-        <span>{t('drop.h1c')}</span>
-      </h1>
+      <h1 className="display">{HERO_PHRASES[lang][phraseIdx]}</h1>
       <p className="hero-hint">{t('drop.hint')}</p>
 
       <div

@@ -214,6 +214,7 @@ button, input, select, textarea { font: inherit; }
 /* Every vertical size below is driven by min(vw, vh) so wide-but-short viewports
    (and zoomed-in windows) shrink the type instead of pushing it off screen. */
 .hero {
+  position: relative;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -221,6 +222,30 @@ button, input, select, textarea { font: inherit; }
   gap: 0;
   padding: clamp(20px, min(8vw, 9vh), 120px) clamp(22px, 4.4vw, 72px);
   overflow: auto;
+}
+/* dithered Themis on the right, content flows over it on the left */
+.hero-visual {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: min(58vw, 900px);
+  overflow: hidden;
+  pointer-events: none;
+}
+.hero-visual > img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: right center;
+  mix-blend-mode: screen;
+  image-rendering: pixelated;
+  opacity: 0.9;
+}
+.kicker, .display, .hero-hint, .hero .dropzone, .hero .error { position: relative; z-index: 1; }
+@media (max-width: 960px) {
+  .hero-visual { width: 85vw; opacity: 0.35; }
+}
+@media (max-width: 600px) {
+  .hero-visual { display: none; }
 }
 .kicker {
   margin: 0 0 clamp(12px, min(2.3vw, 3.5vh), 38px);
@@ -231,7 +256,7 @@ button, input, select, textarea { font: inherit; }
 }
 .display {
   margin: 0;
-  max-width: 13ch;
+  max-width: 18ch;
   font-family: var(--font-display);
   font-size: clamp(2.4rem, min(8.25vw, 16vh), 8.25rem);
   font-variation-settings: 'wght' 320;
@@ -292,9 +317,8 @@ button, input, select, textarea { font: inherit; }
 .react-flow__background-pattern { color: var(--border); }
 .react-flow__edge.edge-call path { stroke: var(--accent); stroke-width: 2.5; }
 .react-flow__edge.edge-wire path { opacity: 0.9; }
-/* call-order badge sitting on the edge */
-.react-flow__edge-text { fill: var(--accent); font-family: var(--font-mono); font-size: 11px; font-weight: 700; }
-.react-flow__edge-textbg { fill: var(--bg); stroke: var(--accent); stroke-width: 1; }
+/* hovering any edge dims the rest — one rule for every kind, animated call edges included */
+.react-flow:has(.react-flow__edge:hover) .react-flow__edge:not(:hover) { opacity: 0.15; }
 .react-flow__controls { box-shadow: none; }
 .react-flow__controls-button {
   border: 1px solid var(--border-strong);
@@ -333,7 +357,6 @@ button, input, select, textarea { font: inherit; }
 }
 .legend i { display: inline-block; width: 18px; height: 2px; margin-right: 8px; vertical-align: middle; }
 .leg-call { background: var(--accent); height: 3px; }
-.leg-order { background: transparent; border: 1px solid var(--accent); height: 12px; width: 12px !important; }
 .leg-wire { background: var(--info); }
 .leg-ghost { background: transparent; border-top: 2px dashed var(--border-strong); height: 0; }
 

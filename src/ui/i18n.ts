@@ -7,9 +7,6 @@ type Dict = Record<string, string>
 const es: Dict = {
   'app.tagline': 'Revisión de código para Automation Anywhere',
   'drop.kicker': 'Control Room · A360 · Procesado local',
-  'drop.h1a': 'Revisa',
-  'drop.h1b': 'tus bots',
-  'drop.h1c': 'sin subirlos',
   'drop.tab': 'zip',
   'drop.title': 'arrastra los .zip exportados del Control Room',
   'drop.hint': 'Todo se procesa en tu navegador. Nada se sube a ningún servidor.',
@@ -19,12 +16,11 @@ const es: Dict = {
   'tab.report': 'Reporte',
   'header.export': 'Exportar PDF',
   'header.reset': 'Nuevo análisis',
-  'score.project': 'Puntaje del proyecto',
+  'score.project': 'Puntaje',
   'canvas.legend.call': 'Llamada (Run Task)',
   'canvas.legend.wire': 'Variable conectada',
   'canvas.legend.ghost': 'Dependencia faltante',
   'canvas.legend.file': 'Archivo estático',
-  'canvas.legend.order': 'N = orden de ejecución',
   'node.lines': 'líneas',
   'node.comments': 'comentarios',
   'node.logs': 'logs',
@@ -112,9 +108,6 @@ const es: Dict = {
 const en: Dict = {
   'app.tagline': 'Code review for Automation Anywhere',
   'drop.kicker': 'Control Room · A360 · Processed locally',
-  'drop.h1a': 'Review',
-  'drop.h1b': 'your bots',
-  'drop.h1c': 'no uploads',
   'drop.tab': 'zip',
   'drop.title': 'drop your Control Room export .zip files',
   'drop.hint': 'Everything is processed in your browser. Nothing is uploaded anywhere.',
@@ -124,12 +117,11 @@ const en: Dict = {
   'tab.report': 'Report',
   'header.export': 'Export PDF',
   'header.reset': 'New analysis',
-  'score.project': 'Project score',
+  'score.project': 'Score',
   'canvas.legend.call': 'Call (Run Task)',
   'canvas.legend.wire': 'Variable wire',
   'canvas.legend.ghost': 'Missing dependency',
   'canvas.legend.file': 'Static file',
-  'canvas.legend.order': 'N = execution order',
   'node.lines': 'lines',
   'node.comments': 'comments',
   'node.logs': 'logs',
@@ -214,6 +206,29 @@ const en: Dict = {
 }
 
 const dicts: Record<Lang, Dict> = { es, en }
+
+/** Hero taglines; one is picked at random per visit. Same index in both languages
+ *  so toggling the language keeps the same phrase. */
+export const HERO_PHRASES: Record<Lang, string[]> = {
+  en: [
+    'May your work define you.',
+    'Your code will speak for you.',
+    'Better code starts here.',
+    'Every line will answer for itself.',
+    'Judgment begins where excuses end.',
+    'May your work survive you.',
+    'Your code will testify.',
+  ],
+  es: [
+    'Que tu trabajo te defina.',
+    'Tu código hablará por ti.',
+    'Un mejor código empieza aquí.',
+    'Cada línea responderá por sí misma.',
+    'El juicio comienza donde terminan las excusas.',
+    'Que tu obra te sobreviva.',
+    'Tu código dará testimonio.',
+  ],
+}
 
 export function translate(lang: Lang, key: string, params?: Record<string, string>): string {
   let s = dicts[lang][key] ?? dicts.en[key] ?? key
