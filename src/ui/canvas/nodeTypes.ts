@@ -39,3 +39,26 @@ export function nodeHeight(d: TBNodeData): number {
   const rows = Math.max(d.inputVars.length, 1) + Math.max(d.wireOutVars.length, 0)
   return 96 + rows * 22
 }
+
+export interface FileNodeData {
+  label: string // basename
+  path: string
+  kind: 'config' | 'asset' | 'other'
+  ext: string
+  [key: string]: unknown
+}
+
+export const FILE_NODE_WIDTH = 170
+export const FILE_NODE_HEIGHT = 52
+
+export function fileIcon(ext: string): string {
+  switch (ext) {
+    case 'xml': return '⚙'
+    case 'xlsx': case 'xls': case 'csv': return '▦'
+    case 'ps1': case 'bat': case 'vbs': return '»'
+    case 'png': case 'jpg': case 'gif': case 'svg': return '◱'
+    case 'wav': case 'mp3': return '♪'
+    case 'pdf': return '≡'
+    default: return '·'
+  }
+}

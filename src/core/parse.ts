@@ -69,6 +69,7 @@ export function parseTaskbot(path: string, sourceZip: string, json: string): Tas
   const actions: Action[] = []
   const calls: Call[] = []
   const varRefs: Record<string, number[]> = {}
+  const texts: string[] = []
 
   const declared = new Set((raw.variables ?? []).map((v) => v.name ?? ''))
 
@@ -96,6 +97,7 @@ export function parseTaskbot(path: string, sourceZip: string, json: string): Tas
     // variable reference scan (attributes + returnTo)
     const seen = new Set<string>()
     const visit = (s: string) => {
+      texts.push(s)
       for (const name of extractVarRefs(s)) {
         if (declared.has(name) && !seen.has(name)) {
           seen.add(name)
@@ -140,5 +142,6 @@ export function parseTaskbot(path: string, sourceZip: string, json: string): Tas
     packages: raw.packages ?? [],
     calls,
     varRefs,
+    textBlob: texts.join('\n').toLowerCase(),
   }
 }

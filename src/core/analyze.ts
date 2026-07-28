@@ -7,7 +7,7 @@ import { messageBoxRules } from './rules/messagebox'
 import { structureRules } from './rules/structure'
 import { hygieneRules } from './rules/hygiene'
 import { botScore, projectScore } from './score'
-import type { Finding, OtherFile, ProjectAnalysis, Taskbot, TaskbotMetrics } from './model'
+import type { FileEdge, Finding, OtherFile, ProjectAnalysis, Taskbot, TaskbotMetrics } from './model'
 
 export function analyzeZips(zips: { name: string; data: Uint8Array }[]): ProjectAnalysis {
   const entries: ZipEntry[] = zips.flatMap((z) => readZip(z.name, z.data))
@@ -46,6 +46,16 @@ export function analyzeZips(zips: { name: string; data: Uint8Array }[]): Project
   const g = buildGraph(taskbots)
   findings.push(...g.findings)
 
+  // taskbot → asset reference: a file is "connected" when its basename appears in
+  // any attribute text of the bot. Contents are never analyzed.
+  const fileEdges: FileEdge[] = []
+  for (const f of otherFiles) {
+    const basename = f.path.split('/').pop()!.toLowerCase()
+    for (const bot of taskbots) {
+      if (bot.textBlob.includes(basename)) fileEdges.push({ from: bot.path, to: f.path })
+    }
+  }
+
   const scores: ProjectAnalysis['scores'] = {}
   for (const bot of taskbots) {
     scores[bot.path] = botScore(findings.filter((f) => f.botPath === bot.path))
@@ -55,6 +65,7 @@ export function analyzeZips(zips: { name: string; data: Uint8Array }[]): Project
     taskbots,
     ghostPaths: g.ghostPaths,
     edges: g.edges,
+    fileEdges,
     findings,
     metrics,
     scores,

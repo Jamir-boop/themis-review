@@ -73,5 +73,17 @@ export function structureRules(bot: Taskbot): Finding[] {
   if (!hasTry && bot.actions.length >= 10) {
     out.push({ ruleId: 'NO_ERROR_HANDLING', severity: 'warn', botPath: bot.path, params: {} })
   }
+
+  if (bot.actions.length > MAX_LINES) {
+    out.push({
+      ruleId: 'TOO_LONG',
+      severity: 'error',
+      botPath: bot.path,
+      params: { lines: String(bot.actions.length), max: String(MAX_LINES) },
+    })
+  }
   return out
 }
+
+/** Framework limit: past this size a taskbot must be split into modules. */
+export const MAX_LINES = 250

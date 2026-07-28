@@ -388,6 +388,27 @@ button, input, select, textarea { font: inherit; }
   background: var(--accent) !important;
 }
 
+/* ---------- file (asset) nodes ---------- */
+.file-node {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 170px;
+  height: 52px;
+  padding: 0 12px;
+  border: 1px dashed var(--border-strong);
+  background: var(--bg);
+  font-family: var(--font-mono);
+}
+.file-node:hover { border-color: var(--accent); }
+.file-icon { flex: none; color: var(--accent); font-size: 16px; }
+.file-label { display: flex; flex-direction: column; min-width: 0; }
+.file-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10.5px; color: var(--text); }
+.file-kind { font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); }
+.file-handle { width: 7px !important; height: 7px !important; border-radius: 0 !important; border: 1px solid var(--bg) !important; background: var(--border-strong) !important; }
+.react-flow__edge.edge-file path { stroke: var(--border-strong); stroke-width: 1.5; stroke-dasharray: 4 4; }
+.leg-file { background: transparent; border-top: 2px dotted var(--border-strong); height: 0; }
+
 /* ---------- editor drawer ---------- */
 .drawer {
   position: absolute;
@@ -431,18 +452,27 @@ button, input, select, textarea { font: inherit; }
 .tabs.small .tab { font-family: var(--font-mono); font-size: 0.74rem; font-weight: 400; letter-spacing: 0.1em; padding-bottom: 12px; }
 
 /* A <table> is not a scroll container, so it needs a wrapper or the page scrolls instead. */
-.code-list, .drawer-scroll, .finding-list { flex: 1; min-height: 0; overflow: auto; margin: 0; }
+.code-list, .drawer-scroll { flex: 1; min-height: 0; overflow: auto; margin: 0; }
 .code-list { list-style: none; padding: 10px 0; font-family: var(--font-mono); font-size: 12px; }
 .code-line {
   display: flex;
-  align-items: baseline;
-  gap: 10px;
-  padding: 3px 14px;
+  align-items: stretch;
+  gap: 0;
+  padding: 3px 14px 3px 8px;
   border-left: 3px solid transparent;
 }
 .code-line:hover { background: var(--accent); color: var(--text-on-accent); }
-.code-line:hover * { color: currentColor; }
-.code-no { flex: none; min-width: 34px; text-align: right; color: var(--text-muted); }
+.code-line:hover * { color: currentColor; border-color: currentColor; }
+.code-line.flash { background: var(--accent); color: var(--text-on-accent); }
+.code-line.flash * { color: currentColor; border-color: currentColor; }
+/* gutter: number stays in its own column no matter the nesting depth */
+.code-no { flex: none; width: 40px; margin-right: 10px; text-align: right; color: var(--text-muted); }
+/* one dim guide per nesting level, editor style */
+.indent-guide { flex: none; width: 18px; border-left: 1px solid var(--border); }
+.code-cmd, .code-pkg, .code-sum, .code-off, .code-flag { align-self: baseline; }
+.code-cmd { margin-right: 10px; }
+.code-pkg { margin-right: 10px; }
+.code-sum { margin-right: 10px; }
 .code-cmd { flex: none; color: var(--accent); }
 .code-pkg { flex: none; color: var(--text-muted); font-size: 10px; }
 .code-sum { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
@@ -468,7 +498,23 @@ button, input, select, textarea { font: inherit; }
 .var-table tbody tr:hover * { color: currentColor; }
 .var-desc { color: var(--text-muted); }
 
-.finding-list { list-style: none; display: flex; flex-direction: column; gap: 10px; padding: 16px 20px; }
+.filter-chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 14px 20px 0; }
+.chip {
+  padding: 6px 10px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+.chip:hover { border-color: var(--accent); color: var(--text); }
+.chip.active { border-color: var(--accent); background: var(--accent); color: var(--text-on-accent); }
+
+.finding-list { list-style: none; display: flex; flex-direction: column; gap: 10px; padding: 16px 20px; margin: 0; }
+.finding.jumpable { cursor: pointer; }
+.finding.jumpable:hover { border-color: var(--accent); }
 .finding {
   padding: 12px 14px;
   border: 1px solid var(--border);

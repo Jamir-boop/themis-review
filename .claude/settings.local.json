@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(git init *)",
-      "Bash(npm create *)"
+      "Bash(npm create *)",
+      "Bash(rtk tsc *)",
+      "Bash(rtk vitest *)"
     ]
   }
 }

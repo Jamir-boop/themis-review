@@ -3,12 +3,15 @@ import { applyNodeChanges, Background, Controls, MiniMap, ReactFlow, type Edge, 
 import '@xyflow/react/dist/style.css'
 import type { ProjectAnalysis } from '../../core/model'
 import TaskbotNode from './TaskbotNode'
-import { NODE_WIDTH, nodeHeight, typeColor, type TBNodeData } from './nodeTypes'
+import FileNode from './FileNode'
+import { FILE_NODE_HEIGHT, FILE_NODE_WIDTH, NODE_WIDTH, nodeHeight, typeColor, type FileNodeData, type TBNodeData } from './nodeTypes'
 import { useT } from '../i18n'
 
-const nodeTypes = { taskbot: TaskbotNode }
+const nodeTypes = { taskbot: TaskbotNode, file: FileNode }
 
-function buildFlow(a: ProjectAnalysis): { nodes: Node<TBNodeData>[]; edges: Edge[] } {
+type FlowNode = Node<TBNodeData> | Node<FileNodeData>
+
+function buildFlow(a: ProjectAnalysis): { nodes: FlowNode[]; edges: Edge[] } {
   const byPath = new Map(a.taskbots.map((t) => [t.path, t]))
 
   // vars per bot that feed outgoing call wires
@@ -25,7 +28,7 @@ function buildFlow(a: ProjectAnalysis): { nodes: Node<TBNodeData>[]; edges: Edge
     }
   }
 
-  const nodes: Node<TBNodeData>[] = []
+  const nodes: FlowNode[] = []
   for (const bot of a.taskbots) {
     const vtypes = new Map(bot.variables.map((v) => [v.name, v.type]))
     const data: TBNodeData = {
@@ -58,8 +61,31 @@ function buildFlow(a: ProjectAnalysis): { nodes: Node<TBNodeData>[]; edges: Edge
     })
   }
 
+  // static files that at least one taskbot references; shown as small nodes, never analyzed
+  const referenced = new Set(a.fileEdges.map((fe) => fe.to))
+  for (const f of a.otherFiles) {
+    if (!referenced.has(f.path)) continue
+    const label = f.path.split('/').pop() ?? f.path
+    nodes.push({
+      id: f.path,
+      type: 'file',
+      position: { x: 0, y: 0 },
+      data: { label, path: f.path, kind: f.kind, ext: (label.split('.').pop() ?? '').toLowerCase() },
+    })
+  }
+
   const edges: Edge[] = []
   const seenWire = new Set<string>()
+  for (const fe of a.fileEdges) {
+    edges.push({
+      id: 'file:' + fe.from + '→' + fe.to,
+      source: fe.from,
+      target: fe.to,
+      sourceHandle: 'call-out',
+      targetHandle: 'file-in',
+      className: 'edge-file',
+    })
+  }
   for (const e of a.edges) {
     edges.push({
       id: 'call:' + e.from + '→' + e.to,
@@ -96,7 +122,7 @@ function buildFlow(a: ProjectAnalysis): { nodes: Node<TBNodeData>[]; edges: Edge
   return { nodes, edges }
 }
 
-async function layout(nodes: Node<TBNodeData>[], edges: Edge[]): Promise<Node<TBNodeData>[]> {
+async function layout(nodes: FlowNode[], edges: Edge[]): Promise<FlowNode[]> {
   const ELK = (await import('elkjs/lib/elk.bundled.js')).default
   const elk = new ELK()
   const graph = {
@@ -107,9 +133,14 @@ async function layout(nodes: Node<TBNodeData>[], edges: Edge[]): Promise<Node<TB
       'elk.spacing.nodeNode': '60',
       'elk.layered.spacing.nodeNodeBetweenLayers': '140',
     },
-    children: nodes.map((n) => ({ id: n.id, width: NODE_WIDTH, height: nodeHeight(n.data) })),
+    children: nodes.map((n) =>
+      n.type === 'file'
+        ? { id: n.id, width: FILE_NODE_WIDTH, height: FILE_NODE_HEIGHT }
+        : { id: n.id, width: NODE_WIDTH, height: nodeHeight(n.data as TBNodeData) },
+    ),
+    // call + file edges shape the layout so assets settle next to the bot that uses them
     edges: edges
-      .filter((e) => e.id.startsWith('call:'))
+      .filter((e) => e.id.startsWith('call:') || e.id.startsWith('file:'))
       .map((e) => ({ id: e.id, sources: [e.source], targets: [e.target] })),
   }
   const res = await elk.layout(graph)
@@ -120,7 +151,7 @@ async function layout(nodes: Node<TBNodeData>[], edges: Edge[]): Promise<Node<TB
 export default function Canvas({ analysis, onSelect }: { analysis: ProjectAnalysis; onSelect: (path: string) => void }) {
   const t = useT()
   const { nodes: rawNodes, edges } = useMemo(() => buildFlow(analysis), [analysis])
-  const [nodes, setNodes] = useState<Node<TBNodeData>[] | null>(null)
+  const [nodes, setNodes] = useState<FlowNode[] | null>(null)
 
   useEffect(() => {
     let alive = true
@@ -141,7 +172,7 @@ export default function Canvas({ analysis, onSelect }: { analysis: ProjectAnalys
       nodeTypes={nodeTypes}
       onNodesChange={(chs) => setNodes((ns) => (ns ? applyNodeChanges(chs, ns) : ns))}
       onNodeClick={(_, n) => {
-        if (!(n.data as TBNodeData).ghost) onSelect(n.id)
+        if (n.type === 'taskbot' && !(n.data as TBNodeData).ghost) onSelect(n.id)
       }}
       nodesDraggable
       fitView
@@ -160,6 +191,9 @@ export default function Canvas({ analysis, onSelect }: { analysis: ProjectAnalys
         </span>
         <span>
           <i className="leg-ghost" /> {t('canvas.legend.ghost')}
+        </span>
+        <span>
+          <i className="leg-file" /> {t('canvas.legend.file')}
         </span>
       </div>
     </ReactFlow>

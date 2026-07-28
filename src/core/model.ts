@@ -85,6 +85,8 @@ export interface Taskbot {
   calls: Call[]
   /** var name -> lines where referenced in attributes/returnTo */
   varRefs: Record<string, number[]>
+  /** lowercase concatenation of every attribute string/expression — used to match asset file references */
+  textBlob: string
 }
 
 export type Severity = 'error' | 'warn' | 'info'
@@ -117,11 +119,18 @@ export interface OtherFile {
   kind: 'config' | 'asset' | 'other'
 }
 
+export interface FileEdge {
+  from: string // taskbot path
+  to: string // file path
+}
+
 export interface ProjectAnalysis {
   taskbots: Taskbot[]
   /** paths referenced by runTask but not present in any uploaded zip */
   ghostPaths: string[]
   edges: GraphEdge[]
+  /** taskbot → static asset/config references (basename match, contents never analyzed) */
+  fileEdges: FileEdge[]
   findings: Finding[]
   metrics: Record<string, TaskbotMetrics> // by bot path
   scores: Record<string, BotScore>

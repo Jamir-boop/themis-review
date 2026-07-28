@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { isComment, type AAValue, type Action, type Finding, type ProjectAnalysis } from '../../core/model'
 import { isMessageBox } from '../../core/rules/messagebox'
 import { useT } from '../i18n'
@@ -40,6 +40,9 @@ export default function EditorDrawer({
 }) {
   const t = useT()
   const [tab, setTab] = useState<Tab>('code')
+  const [filterRule, setFilterRule] = useState<string | null>(null)
+  const [flashLine, setFlashLine] = useState<number | null>(null)
+  const codeListRef = useRef<HTMLOListElement>(null)
   const bot = analysis.taskbots.find((b) => b.path === botPath)
   const findings = useMemo(() => analysis.findings.filter((f) => f.botPath === botPath), [analysis, botPath])
   const byLine = useMemo(() => {
@@ -53,9 +56,31 @@ export default function EditorDrawer({
     return m
   }, [findings])
 
+  // scroll the code list to a line after a finding click switches tabs
+  useEffect(() => {
+    if (tab !== 'code' || flashLine === null) return
+    const el = codeListRef.current?.querySelector(`[data-line="${flashLine}"]`)
+    el?.scrollIntoView({ block: 'center' })
+    const timer = setTimeout(() => setFlashLine(null), 1600)
+    return () => clearTimeout(timer)
+  }, [tab, flashLine])
+
   if (!bot) return null
   const metrics = analysis.metrics[botPath]
   const score = analysis.scores[botPath]
+
+  /** line a finding points at: its own line, else the first reference of its variable */
+  const findingLine = (f: Finding): number | undefined => f.line ?? (f.varName ? bot.varRefs[f.varName]?.[0] : undefined)
+
+  const jumpTo = (f: Finding) => {
+    const line = findingLine(f)
+    if (line === undefined) return
+    setFlashLine(line)
+    setTab('code')
+  }
+
+  const ruleIds = [...new Set(findings.map((f) => f.ruleId))].sort()
+  const visibleFindings = filterRule ? findings.filter((f) => f.ruleId === filterRule) : findings
 
   return (
     <aside className="drawer">
@@ -90,7 +115,7 @@ export default function EditorDrawer({
       </nav>
 
       {tab === 'code' && (
-        <ol className="code-list">
+        <ol className="code-list" ref={codeListRef}>
           {bot.actions.map((a) => {
             const fs = byLine.get(a.line) ?? []
             const cls = [
@@ -98,12 +123,16 @@ export default function EditorDrawer({
               isComment(a) ? 'comment' : '',
               a.disabled || !a.reachable ? 'disabled' : '',
               isMessageBox(a) ? 'msgbox' : '',
+              a.line === flashLine ? 'flash' : '',
             ]
               .filter(Boolean)
               .join(' ')
             return (
-              <li key={a.uid} className={cls} style={{ paddingLeft: 8 + a.depth * 18 }}>
+              <li key={a.uid} className={cls} data-line={a.line}>
                 <span className="code-no">{a.line}</span>
+                {Array.from({ length: a.depth }, (_, i) => (
+                  <span key={i} className="indent-guide" />
+                ))}
                 <span className="code-cmd">{a.commandName}</span>
                 <span className="code-pkg">{a.packageName}</span>
                 <span className="code-sum">{summarize(a)}</span>
@@ -158,17 +187,40 @@ export default function EditorDrawer({
       )}
 
       {tab === 'findings' && (
-        <ul className="finding-list">
-          {findings.map((f, i) => (
-            <li key={i} className={'finding sev-' + f.severity}>
-              <div className="finding-msg">
-                {SEV_ICON[f.severity]} {f.line ? `L${f.line} · ` : ''}
-                {t(`rule.${f.ruleId}.msg`, f.params)}
-              </div>
-              <div className="finding-fix">💡 {t(`rule.${f.ruleId}.fix`, f.params)}</div>
-            </li>
-          ))}
-        </ul>
+        <div className="drawer-scroll">
+          <div className="filter-chips">
+            <button className={filterRule === null ? 'chip active' : 'chip'} onClick={() => setFilterRule(null)}>
+              {t('editor.filter.all')} ({findings.length})
+            </button>
+            {ruleIds.map((id) => (
+              <button
+                key={id}
+                className={filterRule === id ? 'chip active' : 'chip'}
+                onClick={() => setFilterRule(filterRule === id ? null : id)}
+              >
+                {id} ({findings.filter((f) => f.ruleId === id).length})
+              </button>
+            ))}
+          </div>
+          <ul className="finding-list">
+            {visibleFindings.map((f, i) => {
+              const line = findingLine(f)
+              return (
+                <li
+                  key={i}
+                  className={'finding sev-' + f.severity + (line !== undefined ? ' jumpable' : '')}
+                  onClick={() => jumpTo(f)}
+                >
+                  <div className="finding-msg">
+                    {SEV_ICON[f.severity]} {line !== undefined ? `L${line} · ` : ''}
+                    {t(`rule.${f.ruleId}.msg`, f.params)}
+                  </div>
+                  <div className="finding-fix">💡 {t(`rule.${f.ruleId}.fix`, f.params)}</div>
+                </li>
+              )
+            })}
+          </ul>
+        </div>
       )}
     </aside>
   )

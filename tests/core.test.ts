@@ -5,6 +5,7 @@ import { analyzeZips } from '../src/core/analyze'
 import { parseTaskbot } from '../src/core/parse'
 import { buildGraph, callDepth } from '../src/core/graph'
 import { messageBoxRules } from '../src/core/rules/messagebox'
+import { structureRules } from '../src/core/rules/structure'
 
 const DATA = join(__dirname, '..', '.data')
 
@@ -103,6 +104,16 @@ describe('all zips combined', () => {
     }
   })
 
+  it('links referenced static files to their taskbots', () => {
+    expect(a.fileEdges.length).toBeGreaterThan(0)
+    for (const fe of a.fileEdges) {
+      expect(a.taskbots.some((t) => t.path === fe.from)).toBe(true)
+      expect(a.otherFiles.some((f) => f.path === fe.to)).toBe(true)
+    }
+    // config XMLs are read via config_read_xml, so at least one must be linked
+    expect(a.fileEdges.some((fe) => fe.to.endsWith('.xml'))).toBe(true)
+  })
+
   it('never flags utilidad_mensajeria for call depth', () => {
     const depthFindings = a.findings.filter((f) => f.ruleId === 'CALL_DEPTH')
     expect(depthFindings.every((f) => !f.params.callee.startsWith('utilidad_mensajeria'))).toBe(true)
@@ -143,6 +154,16 @@ describe('synthetic taskbots', () => {
 
     const quiet = parseTaskbot('Bots/x/tasks/Quiet', 'z', wrap([msgBox('a', true), log('b'), log('c')]))
     expect(messageBoxRules(quiet).some((f) => f.ruleId === 'MSGBOX_OVER_LOGS')).toBe(false)
+  })
+
+  it('demands modularization past 250 lines', () => {
+    const nodes = Array.from({ length: 251 }, (_, i) => log('n' + i))
+    const big = parseTaskbot('Bots/x/tasks/Big', 'z', wrap(nodes))
+    const f = structureRules(big).find((x) => x.ruleId === 'TOO_LONG')
+    expect(f).toMatchObject({ severity: 'error', params: { lines: '251', max: '250' } })
+
+    const ok = parseTaskbot('Bots/x/tasks/Ok', 'z', wrap(nodes.slice(0, 250)))
+    expect(structureRules(ok).some((x) => x.ruleId === 'TOO_LONG')).toBe(false)
   })
 
   it('measures call depth and exempts the messaging utility', () => {

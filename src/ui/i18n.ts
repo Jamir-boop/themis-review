@@ -23,6 +23,7 @@ const es: Dict = {
   'canvas.legend.call': 'Llamada (Run Task)',
   'canvas.legend.wire': 'Variable conectada',
   'canvas.legend.ghost': 'Dependencia faltante',
+  'canvas.legend.file': 'Archivo estático',
   'node.lines': 'líneas',
   'node.comments': 'comentarios',
   'node.logs': 'logs',
@@ -41,6 +42,7 @@ const es: Dict = {
   'editor.var.io': 'E/S',
   'editor.var.desc': 'Descripción',
   'editor.disabled': 'deshabilitada',
+  'editor.filter.all': 'Todos',
   'report.title': 'Reporte de revisión de código',
   'report.date': 'Fecha',
   'report.files': 'Archivos analizados',
@@ -99,6 +101,8 @@ const es: Dict = {
   'rule.CALL_VAR_UNDECLARED.fix': 'Crear la variable o corregir la expresión del parámetro.',
   'rule.CALL_DEPTH.msg': 'Run Task en la línea {line} llama a "{callee}", que queda en el nivel {depth} de anidación de taskbots.',
   'rule.CALL_DEPTH.fix': 'Subir la llamada al master (nivel 1 llama a nivel 2) para que el flujo se lea desde arriba. Solo utilidad_mensajeria puede invocarse desde cualquier nivel.',
+  'rule.TOO_LONG.msg': 'El taskbot tiene {lines} líneas; el máximo permitido es {max}.',
+  'rule.TOO_LONG.fix': 'Modularizar: dividir en taskbots con responsabilidad propia según la anatomía del framework (ingesta, ejecución por ítem, reporte…).',
 }
 
 const en: Dict = {
@@ -120,6 +124,7 @@ const en: Dict = {
   'canvas.legend.call': 'Call (Run Task)',
   'canvas.legend.wire': 'Variable wire',
   'canvas.legend.ghost': 'Missing dependency',
+  'canvas.legend.file': 'Static file',
   'node.lines': 'lines',
   'node.comments': 'comments',
   'node.logs': 'logs',
@@ -138,6 +143,7 @@ const en: Dict = {
   'editor.var.io': 'I/O',
   'editor.var.desc': 'Description',
   'editor.disabled': 'disabled',
+  'editor.filter.all': 'All',
   'report.title': 'Code review report',
   'report.date': 'Date',
   'report.files': 'Analyzed files',
@@ -195,6 +201,8 @@ const en: Dict = {
   'rule.CALL_VAR_UNDECLARED.fix': 'Create the variable or fix the parameter expression.',
   'rule.CALL_DEPTH.msg': 'Run Task at line {line} calls "{callee}", which sits at taskbot nesting level {depth}.',
   'rule.CALL_DEPTH.fix': 'Move the call up to the master (level 1 calls level 2) so the flow reads top-down. Only utilidad_mensajeria may be called from any level.',
+  'rule.TOO_LONG.msg': 'Taskbot has {lines} lines; the maximum allowed is {max}.',
+  'rule.TOO_LONG.fix': 'Modularize: split into taskbots with a single responsibility following the framework anatomy (ingestion, per-item execution, reporting…).',
 }
 
 const dicts: Record<Lang, Dict> = { es, en }
