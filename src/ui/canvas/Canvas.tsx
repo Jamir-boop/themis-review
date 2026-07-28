@@ -190,7 +190,7 @@ export default function Canvas({ analysis, onSelect }: { analysis: ProjectAnalys
     >
       <Background gap={24} />
       <Controls showInteractive={false} />
-      <MiniMap pannable zoomable />
+      <MiniMap position="bottom-left" pannable zoomable />
       <div className="legend">
         <span>
           <i className="leg-call" /> {t('canvas.legend.call')}

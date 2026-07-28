@@ -304,9 +304,11 @@ button, input, select, textarea { font: inherit; }
 }
 .react-flow__controls-button:last-child { border-bottom: 1px solid var(--border-strong); }
 .react-flow__controls-button:hover { background: var(--accent); fill: var(--text-on-accent); }
+/* minimap sits above the zoom controls in the bottom-left; legend owns bottom-right */
 .react-flow__minimap {
   border: 1px solid var(--border-strong);
   background: var(--surface-1);
+  margin-bottom: 128px;
 }
 .react-flow__minimap-mask { fill: rgba(0, 0, 0, 0.72); }
 .react-flow__minimap-node { fill: var(--border-strong); stroke: none; }
@@ -572,7 +574,37 @@ button, input, select, textarea { font: inherit; }
 }
 /* Wide table scrolls inside its own box so the page never scrolls sideways. */
 .table-scroll { overflow-x: auto; margin-bottom: 36px; }
+.report-options {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 32px;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+}
+.report-options-label { color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; }
+.report-options-hint { flex: 1 1 100%; color: var(--text-muted); font-size: 0.68rem; }
+.sev-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 10px;
+  border: 1px solid var(--border-strong);
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+}
+.sev-toggle.on { border-color: var(--accent); color: var(--text); }
+.sev-toggle input { accent-color: var(--accent); margin: 0; }
+
 .report-table { width: 100%; min-width: 620px; border-collapse: collapse; font-family: var(--font-mono); font-size: 12px; }
+.report-table th.sortable { cursor: pointer; user-select: none; white-space: nowrap; }
+.report-table th.sortable:hover { color: var(--accent); }
+.report-table th.sorted { color: var(--accent); }
+.sort-arrow { display: inline-block; width: 1em; margin-left: 4px; font-size: 0.75em; }
 .report-table th, .report-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); text-align: left; }
 .report-table th { color: var(--text-muted); font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; }
 .report-table tbody tr:hover { background: var(--accent); color: var(--text-on-accent); }
