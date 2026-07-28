@@ -2,24 +2,24 @@
 
 **https://jamir-boop.github.io/themis-review/**
 
-Code review estático para bots de Automation Anywhere (A360), 100% en el navegador.
+Static code review for Automation Anywhere (A360) bots, 100% in the browser.
 
-Sube uno o varios `.zip` exportados del Control Room y obtén:
+Upload one or more `.zip` files exported from the Control Room and get:
 
-- **Mapa de nodos** estilo Blender: cada taskbot es un nodo con sus métricas (líneas, comentarios, logs, variables); las llamadas Run Task se dibujan como conexiones y cada variable pasada entre taskbots como un cable individual coloreado por tipo.
-- **Vista de editor** por taskbot: código línea por línea con hallazgos en el margen, tabla de variables y paquetes.
-- **Reglas de revisión**: convención de nombres `<alcance><Tipo><NombreCamel>` del core_framework, Message Boxes que no se cierran solos (los que tienen timeout no se marcan) o que quedaron en código muerto, taskbots anidados a partir del nivel 3 (`utilidad_mensajeria` exenta), catch vacíos, rutas hardcodeadas, código deshabilitado, variables sin usar o sin descripción (las de entrada/salida pesan más que las locales), dependencias faltantes, cobertura de logs y comentarios.
-- **Puntaje 0–100** por taskbot y por proyecto, y **reporte exportable a PDF** (botón Exportar → imprimir) con cada hallazgo y su corrección sugerida. UI en español e inglés.
+- **Node map** (Blender-style): each taskbot is a node with its metrics (lines, comments, logs, variables); Run Task calls are drawn as connections and each variable passed between taskbots as an individual wire colored by type.
+- **Editor view** per taskbot: line-by-line code with findings in the margin, plus a variables and packages table.
+- **Review rules**: naming convention `<scope><Type><CamelName>` from core_framework, Message Boxes that don't close themselves (those with timeout are not flagged) or that ended up in dead code, taskbots nested from level 3 onward (`utilidad_mensajeria` exempt), empty catches, hardcoded paths, disabled code, unused or undescribed variables (input/output variables weigh more than locals), missing dependencies, log coverage, and comment coverage.
+- **Score 0–100** per taskbot and per project, plus an **exportable PDF report** (Export button → print) with each finding and its suggested fix. UI in Spanish and English.
 
-Nada se sube a ningún servidor: los zip se procesan íntegramente en el front-end.
+Nothing is uploaded to any server: zips are processed entirely on the front-end.
 
-## Desarrollo
+## Development
 
 ```bash
 npm install
-npm run dev    # servidor local
-npm test       # tests del motor de análisis (requiere zips de ejemplo en .data/)
-npm run build  # build estático (se despliega a GitHub Pages vía Actions)
+npm run dev    # local server
+npm test       # analysis engine tests (requires sample zips in .data/)
+npm run build  # static build (deployed to GitHub Pages via Actions)
 ```
 
-Estructura: `src/core` es el motor de análisis (TypeScript puro, sin React); `src/ui` la interfaz (React + React Flow). Ver [plan.md](plan.md) para el diseño completo.
+Structure: `src/core` is the analysis engine (pure TypeScript, no React); `src/ui` is the interface (React + React Flow). See [plan.md](plan.md) for the full design.
