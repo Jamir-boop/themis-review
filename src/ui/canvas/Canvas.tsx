@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 import { applyNodeChanges, Background, Controls, MiniMap, ReactFlow, type Edge, type Node } from '@xyflow/react'
-import ELK from 'elkjs/lib/elk.bundled.js'
 import '@xyflow/react/dist/style.css'
 import type { ProjectAnalysis } from '../../core/model'
 import TaskbotNode from './TaskbotNode'
@@ -8,7 +7,6 @@ import { NODE_WIDTH, nodeHeight, typeColor, type TBNodeData } from './nodeTypes'
 import { useT } from '../i18n'
 
 const nodeTypes = { taskbot: TaskbotNode }
-const elk = new ELK()
 
 function buildFlow(a: ProjectAnalysis): { nodes: Node<TBNodeData>[]; edges: Edge[] } {
   const byPath = new Map(a.taskbots.map((t) => [t.path, t]))
@@ -99,6 +97,8 @@ function buildFlow(a: ProjectAnalysis): { nodes: Node<TBNodeData>[]; edges: Edge
 }
 
 async function layout(nodes: Node<TBNodeData>[], edges: Edge[]): Promise<Node<TBNodeData>[]> {
+  const ELK = (await import('elkjs/lib/elk.bundled.js')).default
+  const elk = new ELK()
   const graph = {
     id: 'root',
     layoutOptions: {
