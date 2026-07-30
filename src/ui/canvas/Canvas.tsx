@@ -19,6 +19,63 @@ import { useT } from '../i18n'
 
 const nodeTypes = { taskbot: TaskbotNode, file: FileNode }
 
+/** minimap size is fixed so the zoom controls can be parked right beside it */
+const MINIMAP_W = 190
+const MINIMAP_H = 130
+
+const LEGEND_KEYS = ['call', 'wire', 'ghost', 'file'] as const
+
+/** Folded to a single row by default — expanded it covered too much canvas.
+ *  Opens on click, closes again as soon as the pointer or focus leaves. */
+function Legend() {
+  const t = useT()
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  // fold as soon as attention moves elsewhere: focus or a click outside, or Escape.
+  // Document-level listeners rather than onBlur, which never fired reliably here.
+  useEffect(() => {
+    if (!open) return
+    const away = (e: Event) => {
+      if (!ref.current?.contains(e.target as HTMLElement | null)) setOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('focusin', away)
+    document.addEventListener('pointerdown', away)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('focusin', away)
+      document.removeEventListener('pointerdown', away)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open])
+
+  return (
+    <div ref={ref} className={'legend' + (open ? ' open' : '')} onPointerLeave={() => setOpen(false)}>
+      <button className="legend-toggle" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
+        <span className="legend-caret" aria-hidden="true">
+          {open ? '▾' : '▸'}
+        </span>
+        {t('canvas.legend.title')}
+      </button>
+      {open && (
+        <dl className="legend-body">
+          {LEGEND_KEYS.map((k) => (
+            <div className="legend-item" key={k}>
+              <dt>
+                <i className={'leg-' + k} /> {t('canvas.legend.' + k)}
+              </dt>
+              <dd>{t('canvas.legend.' + k + '.desc')}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+    </div>
+  )
+}
+
 type FlowNode = Node<TBNodeData> | Node<FileNodeData>
 
 function buildFlow(a: ProjectAnalysis): { nodes: FlowNode[]; edges: Edge[] } {
@@ -168,7 +225,6 @@ export default function Canvas({
   onSelect: (path: string) => void
   focus?: { path: string; nonce: number } | null
 }) {
-  const t = useT()
   const { nodes: rawNodes, edges } = useMemo(() => buildFlow(analysis), [analysis])
   const [nodes, setNodes] = useState<FlowNode[] | null>(null)
   const [rf, setRf] = useState<ReactFlowInstance<FlowNode, Edge> | null>(null)
@@ -236,18 +292,9 @@ export default function Canvas({
       proOptions={{ hideAttribution: true }}
     >
       <Background gap={24} />
-      <Controls showInteractive={false} />
-      <MiniMap position="bottom-left" pannable zoomable />
-      <dl className="legend">
-        {(['call', 'wire', 'ghost', 'file'] as const).map((k) => (
-          <div className="legend-item" key={k}>
-            <dt>
-              <i className={'leg-' + k} /> {t('canvas.legend.' + k)}
-            </dt>
-            <dd>{t('canvas.legend.' + k + '.desc')}</dd>
-          </div>
-        ))}
-      </dl>
+      <MiniMap position="bottom-left" pannable zoomable style={{ width: MINIMAP_W, height: MINIMAP_H }} />
+      <Controls position="bottom-left" showInteractive={false} />
+      <Legend />
     </ReactFlow>
   )
 }

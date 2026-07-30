@@ -356,11 +356,15 @@ button, input, select, textarea { font: inherit; }
 }
 .react-flow__controls-button:last-child { border-bottom: 1px solid var(--border-strong); }
 .react-flow__controls-button:hover { background: var(--accent); fill: var(--text-on-accent); }
-/* minimap sits above the zoom controls in the bottom-left; legend owns bottom-right */
+/* minimap in the bottom-left corner with the zoom controls parked to its right */
 .react-flow__minimap {
+  margin: 0 0 12px 12px;
   border: 1px solid var(--border-strong);
   background: var(--surface-1);
-  margin-bottom: 128px;
+}
+.react-flow__panel.react-flow__controls.bottom.left {
+  /* 190px minimap + its 12px offset + a 10px gap */
+  margin: 0 0 12px 212px;
 }
 .react-flow__minimap-mask { fill: rgba(0, 0, 0, 0.72); }
 .react-flow__minimap-node { fill: var(--border-strong); stroke: none; }
@@ -371,16 +375,40 @@ button, input, select, textarea { font: inherit; }
   bottom: 12px;
   right: 12px;
   z-index: 5;
-  display: flex;
-  flex-direction: column;
-  gap: 9px;
   max-width: 280px;
   margin: 0;
-  padding: 10px 14px;
-  border: 1px solid var(--border-strong);
+  /* dashed while folded: the hint that there is more to open */
+  border: 1px dashed var(--border-strong);
   background: var(--bg);
   font-family: var(--font-mono);
   font-size: 0.7rem;
+}
+.legend.open { border-style: solid; border-color: var(--accent); }
+.legend-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 12px;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.legend-toggle:hover, .legend.open .legend-toggle { color: var(--accent); }
+.legend-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.legend-caret { display: inline-block; width: 9px; }
+.legend-body {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin: 0;
+  padding: 2px 14px 11px;
+  border-top: 1px solid var(--border);
 }
 .legend-item dt {
   color: var(--text);
@@ -396,9 +424,10 @@ button, input, select, textarea { font: inherit; }
   text-transform: none;
 }
 .legend i { display: inline-block; width: 18px; height: 2px; margin-right: 8px; vertical-align: middle; }
-/* tight canvases only get the titles */
+/* tight canvases only get the titles, even when unfolded */
 @media (max-width: 700px), (max-height: 520px) {
-  .legend { max-width: 200px; gap: 6px; }
+  .legend { max-width: 210px; }
+  .legend-body { gap: 6px; }
   .legend-item dd { display: none; }
 }
 .leg-call { background: var(--accent); height: 3px; }
