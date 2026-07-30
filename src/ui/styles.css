@@ -373,17 +373,34 @@ button, input, select, textarea { font: inherit; }
   z-index: 5;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 9px;
+  max-width: 280px;
+  margin: 0;
   padding: 10px 14px;
   border: 1px solid var(--border-strong);
   background: var(--bg);
-  color: var(--text-muted);
   font-family: var(--font-mono);
   font-size: 0.7rem;
+}
+.legend-item dt {
+  color: var(--text);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
+.legend-item dd {
+  margin: 3px 0 0 26px;
+  color: var(--text-muted);
+  font-size: 0.62rem;
+  line-height: 1.35;
+  letter-spacing: 0;
+  text-transform: none;
+}
 .legend i { display: inline-block; width: 18px; height: 2px; margin-right: 8px; vertical-align: middle; }
+/* tight canvases only get the titles */
+@media (max-width: 700px), (max-height: 520px) {
+  .legend { max-width: 200px; gap: 6px; }
+  .legend-item dd { display: none; }
+}
 .leg-call { background: var(--accent); height: 3px; }
 .leg-wire { background: var(--info); }
 .leg-ghost { background: transparent; border-top: 2px dashed var(--border-strong); height: 0; }
@@ -646,6 +663,45 @@ button, input, select, textarea { font: inherit; }
   font-variation-settings: 'wght' 550;
   line-height: 0.95;
 }
+/* ---------- rules reference ---------- */
+.rules-model {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.rules-model-block {
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+}
+.rules-model-label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-muted);
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.rules-model-block ul { margin: 0; padding-left: 0; list-style: none; display: grid; gap: 4px; }
+.rules-model-value { margin: 0; color: var(--accent); font-size: 1.6rem; font-weight: 700; }
+.rules-model-note { margin: 6px 0 0; color: var(--text-muted); font-size: 0.66rem; line-height: 1.4; }
+.rules-note {
+  max-width: 90ch;
+  margin: 0 0 32px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1.5;
+}
+.rules-table { min-width: 900px; }
+.rules-table code { color: var(--accent); }
+.rules-msg { max-width: 34ch; white-space: normal; line-height: 1.4; }
+.rules-shared { margin-left: 4px; color: var(--text-muted); cursor: help; }
+.rules-view .report-table tbody tr:hover { background: transparent; color: inherit; }
+.rules-view .report-table tbody tr:hover code { color: var(--accent); }
+
 /* Wide table scrolls inside its own box so the page never scrolls sideways. */
 .table-scroll { overflow-x: auto; margin-bottom: 36px; }
 .report-options {

@@ -238,20 +238,16 @@ export default function Canvas({
       <Background gap={24} />
       <Controls showInteractive={false} />
       <MiniMap position="bottom-left" pannable zoomable />
-      <div className="legend">
-        <span>
-          <i className="leg-call" /> {t('canvas.legend.call')}
-        </span>
-        <span>
-          <i className="leg-wire" /> {t('canvas.legend.wire')}
-        </span>
-        <span>
-          <i className="leg-ghost" /> {t('canvas.legend.ghost')}
-        </span>
-        <span>
-          <i className="leg-file" /> {t('canvas.legend.file')}
-        </span>
-      </div>
+      <dl className="legend">
+        {(['call', 'wire', 'ghost', 'file'] as const).map((k) => (
+          <div className="legend-item" key={k}>
+            <dt>
+              <i className={'leg-' + k} /> {t('canvas.legend.' + k)}
+            </dt>
+            <dd>{t('canvas.legend.' + k + '.desc')}</dd>
+          </div>
+        ))}
+      </dl>
     </ReactFlow>
   )
 }

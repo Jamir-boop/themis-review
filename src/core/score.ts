@@ -7,7 +7,7 @@ export const RULE_CAP = 15
 
 /** Variants of one rule (…_LOCAL) share a cap, so splitting a rule in two
  *  changes how findings are weighted without doubling what the category can cost. */
-function capGroup(ruleId: string): string {
+export function capGroup(ruleId: string): string {
   return ruleId.replace(/_LOCAL$/, '')
 }
 
@@ -22,12 +22,18 @@ export function scoreFindings(findings: Finding[]): number {
   return Math.max(0, Math.round((100 - total) * 10) / 10)
 }
 
+/** Grade thresholds, highest first. `grade()` reads these so the Rules view can
+ *  display the same numbers the scoring actually uses. */
+export const GRADE_BANDS: { grade: BotScore['grade']; min: number }[] = [
+  { grade: 'A', min: 90 },
+  { grade: 'B', min: 75 },
+  { grade: 'C', min: 60 },
+  { grade: 'D', min: 40 },
+  { grade: 'F', min: 0 },
+]
+
 export function grade(score: number): BotScore['grade'] {
-  if (score >= 90) return 'A'
-  if (score >= 75) return 'B'
-  if (score >= 60) return 'C'
-  if (score >= 40) return 'D'
-  return 'F'
+  return (GRADE_BANDS.find((b) => score >= b.min) ?? GRADE_BANDS[GRADE_BANDS.length - 1]).grade
 }
 
 export function botScore(findings: Finding[]): BotScore {

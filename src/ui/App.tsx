@@ -5,8 +5,9 @@ import DropZone from './DropZone'
 import Canvas from './canvas/Canvas'
 import EditorDrawer from './editor/EditorDrawer'
 import Report from './report/Report'
+import Rules from './rules/Rules'
 
-type View = 'map' | 'report'
+type View = 'map' | 'report' | 'rules'
 
 function Shell() {
   const t = useT()
@@ -33,16 +34,21 @@ function Shell() {
     <div className="app">
       <header className="header no-print">
         <div className="header-zone header-left">
-          {analysis && (
-            <nav className="tabs">
-              <button className={view === 'map' ? 'tab active' : 'tab'} onClick={() => setView('map')}>
-                {t('tab.map')}
-              </button>
+          <nav className="tabs">
+            {/* without an upload the map tab is the way back to the drop zone */}
+            <button className={view === 'map' ? 'tab active' : 'tab'} onClick={() => setView('map')}>
+              {analysis ? t('tab.map') : t('tab.upload')}
+            </button>
+            {analysis && (
               <button className={view === 'report' ? 'tab active' : 'tab'} onClick={() => setView('report')}>
                 {t('tab.report')}
               </button>
-            </nav>
-          )}
+            )}
+            {/* the rule reference stands on its own, with or without an upload */}
+            <button className={view === 'rules' ? 'tab active' : 'tab'} onClick={() => setView('rules')}>
+              {t('tab.rules')}
+            </button>
+          </nav>
         </div>
 
         <div className="brand">
@@ -82,7 +88,8 @@ function Shell() {
         </div>
       </header>
 
-      {!analysis && <DropZone onAnalyzed={setAnalysis} />}
+      {!analysis && view !== 'rules' && <DropZone onAnalyzed={setAnalysis} />}
+      {view === 'rules' && <Rules analysis={analysis} />}
       {analysis && view === 'map' && (
         <div className="canvas-wrap no-print">
           <Canvas analysis={analysis} onSelect={setSelected} focus={focus} />
